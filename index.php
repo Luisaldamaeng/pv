@@ -1,0 +1,399 @@
+<?php
+session_start();
+?>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Buscar datos en tiempo real con PHP, MySQL y AJAX">
+    <meta name="author" content="Marco Robles">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Almacen</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <style>
+        body {
+            background-color: #add8e6;
+        }
+        .modal-custom .modal-content {
+            background-color: #ffffe0;
+        }
+        .modal-custom .modal-body,
+        .modal-custom .modal-title {
+            color: red;
+        }
+        .modal-custom .form-control {
+            border: 1px solid #000;
+        }
+        .modal-custom label {
+            color: red;
+        }
+        .puntero-celda {
+            width: 20px;
+            font-weight: bold;
+            color: red;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .label-naranja {
+            background-color: orange;
+            color: black;
+            font-weight: bold;
+            border-color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="container py-4 text-center">
+            <h2>Productos</h2>
+
+            <div class="row g-4">
+                <div class="col-auto text-start">
+                    <label for="num_registros" class="col-form-label">Mostrar: </label>
+                </div>
+                <div class="col-auto text-start">
+                    <select name="num_registros" id="num_registros" class="form-select">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
+                    </select>
+                </div>
+                <div class="col-auto text-start">
+                    <label for="num_registros" class="col-form-label">registros </label>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <label for="busqueda_codigoprod" class="input-group-text label-naranja">cod prod</label>
+                        <input type="text" class="form-control" id="busqueda_codigoprod" name="busqueda_codigoprod">
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <label for="busqueda_codbar" class="input-group-text label-naranja">codbar</label>
+                        <input type="text" class="form-control" id="busqueda_codbar" name="busqueda_codbar">
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <div class="input-group">
+                        <label for="campo" class="input-group-text">Buscar:</label>
+                        <input type="text" name="campo" id="campo" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row py-4">
+                <div class="col">
+                    <table class="table table-sm table-bordered table-striped">
+                        <thead>
+                            <th></th>
+                            <th class="sort asc">Cód. Prod.</th>
+                            <th class="sort asc">Nombre</th>
+                            <th class="sort asc">Precio 1</th>
+                            <th class="sort asc">Cód. Barra</th>
+                            <th class="sort asc">Selecc</th>
+                            <th class="sort asc">Costo</th>
+                            <th></th>
+                            <th></th>
+                        </thead>
+                        <tbody id="content"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row justify-content-between">
+                <div class="col-12 col-md-4">
+                    <label id="lbl-total"></label>
+                </div>
+                <div class="col-12 col-md-4" id="nav-paginacion"></div>
+                <input type="hidden" id="pagina" value="1">
+                <input type="hidden" id="orderCol" value="0">
+                <input type="hidden" id="orderType" value="asc">
+            </div>
+
+            <div class="row mt-4">
+                <div class="col text-center">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoModal">Nuevo</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div class="modal fade" id="nuevoModal" tabindex="-1" aria-labelledby="nuevoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-custom">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nuevoModalLabel">Nuevo Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-nuevo" action="crear_registro.php" method="post">
+                        <div class="mb-3">
+                            <label for="nuevo-codigoprod" class="form-label">Código de Producto</label>
+                            <input type="text" class="form-control" id="nuevo-codigoprod" name="codigoprod" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevo-nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nuevo-nombre" name="nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevo-precio1" class="form-label">Precio 1</label>
+                            <input type="number" step="any" class="form-control" id="nuevo-precio1" name="precio1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevo-codbar" class="form-label">Código de Barra</label>
+                            <input type="text" class="form-control" id="nuevo-codbar" name="codbar">
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevo-selecc" class="form-label">Selecc</label>
+                            <input type="text" class="form-control" id="nuevo-selecc" name="selecc">
+                        </div>
+                        <div class="mb-3">
+                            <label for="nuevo-costo" class="form-label">Costo</label>
+                            <input type="number" step="any" class="form-control" id="nuevo-costo" name="costo">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-success" form="form-nuevo">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edita -->
+    <div class="modal fade" id="editaModal" tabindex="-1" aria-labelledby="editaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-custom">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editaModalLabel">Editar Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-edita">
+                        <input type="hidden" id="id" name="id">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="precio1" class="form-label">Precio 1</label>
+                            <input type="number" step="any" class="form-control" id="precio1" name="precio1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codbar" class="form-label">Código de Barra</label>
+                            <input type="text" class="form-control" id="codbar" name="codbar">
+                        </div>
+                        <div class="mb-3">
+                            <label for="selecc" class="form-label">Selecc</label>
+                            <input type="text" class="form-control" id="selecc" name="selecc">
+                        </div>
+                        <div class="mb-3">
+                            <label for="costo" class="form-label">Costo</label>
+                            <input type="number" step="any" class="form-control" id="costo" name="costo">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary" form="form-edita">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Elimina -->
+    <div class="modal fade" id="eliminaModal" tabindex="-1" aria-labelledby="eliminaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-custom">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eliminaModalLabel">Eliminar Registro</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Desea eliminar este registro?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <form id="form-elimina" class="d-inline">
+                        <input type="hidden" id="id_eliminar" name="id">
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", getData);
+
+        function getData() {
+            let input = document.getElementById("campo").value;
+            let busqueda_codigoprod = document.getElementById("busqueda_codigoprod").value;
+            let busqueda_codbar = document.getElementById("busqueda_codbar").value;
+            let num_registros = document.getElementById("num_registros").value;
+            let content = document.getElementById("content");
+            let pagina = document.getElementById("pagina").value || 1;
+            let orderCol = document.getElementById("orderCol").value;
+            let orderType = document.getElementById("orderType").value;
+
+            let formaData = new FormData();
+            formaData.append('campo', input);
+            formaData.append('busqueda_codigoprod', busqueda_codigoprod);
+            formaData.append('busqueda_codbar', busqueda_codbar);
+            formaData.append('registros', num_registros);
+            formaData.append('pagina', pagina);
+            formaData.append('orderCol', orderCol);
+            formaData.append('orderType', orderType);
+
+            fetch("load.php", {
+                method: "POST",
+                body: formaData
+            })
+            .then(response => response.json())
+            .then(data => {
+                content.innerHTML = data.data;
+                document.getElementById("lbl-total").innerHTML = `Mostrando ${data.totalFiltro} de ${data.totalRegistros} registros`;
+                document.getElementById("nav-paginacion").innerHTML = data.paginacion;
+                if (data.data.includes('Sin resultados') && parseInt(pagina) !== 1) {
+                    nextPage(1);
+                } else {
+                    const firstRow = content.querySelector('tr');
+                    if (firstRow && !firstRow.querySelector('td[colspan="8"]')) {
+                        setPointer(firstRow);
+                    }
+                }
+            })
+            .catch(err => console.log(err));
+        }
+
+        function nextPage(pagina) {
+            document.getElementById('pagina').value = pagina;
+            getData();
+        }
+
+        function ordenar(e) {
+            let elemento = e.target;
+            let orderType = elemento.classList.contains("asc") ? "desc" : "asc";
+            document.getElementById('orderCol').value = elemento.cellIndex;
+            document.getElementById("orderType").value = orderType;
+            elemento.classList.toggle("asc");
+            elemento.classList.toggle("desc");
+            getData();
+        }
+
+        function resetPagina() {
+            document.getElementById('pagina').value = 1;
+            getData();
+        }
+
+        function clearPointer() {
+            document.querySelectorAll('#content .puntero-celda').forEach(cell => cell.innerHTML = '');
+        }
+
+        function setPointer(row) {
+            clearPointer();
+            const pointerCell = row.querySelector('.puntero-celda');
+            if (pointerCell) {
+                pointerCell.innerHTML = '➤';
+            }
+        }
+
+        document.getElementById("campo").addEventListener("keyup", resetPagina);
+        document.getElementById("busqueda_codigoprod").addEventListener("keyup", resetPagina);
+        document.getElementById("busqueda_codbar").addEventListener("keyup", resetPagina);
+        document.getElementById("num_registros").addEventListener("change", getData);
+
+        let columns = document.querySelectorAll(".sort");
+        columns.forEach(column => {
+            column.addEventListener("click", ordenar);
+        });
+
+        document.getElementById('content').addEventListener('click', event => {
+            const clickedRow = event.target.closest('tr');
+            if (clickedRow && !clickedRow.querySelector('td[colspan="8"]')) {
+                setPointer(clickedRow);
+            }
+        });
+
+        const editaModal = document.getElementById('editaModal');
+        editaModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            editaModal.querySelector('.modal-body #id').value = id;
+            editaModal.querySelector('.modal-body #nombre').value = button.getAttribute('data-nombre');
+            editaModal.querySelector('.modal-body #precio1').value = button.getAttribute('data-precio1');
+            editaModal.querySelector('.modal-body #codbar').value = button.getAttribute('data-codbar');
+            editaModal.querySelector('.modal-body #selecc').value = button.getAttribute('data-selecc');
+            editaModal.querySelector('.modal-body #costo').value = button.getAttribute('data-costo');
+        });
+
+        const eliminaModal = document.getElementById('eliminaModal');
+        eliminaModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            eliminaModal.querySelector('.modal-footer #id_eliminar').value = id;
+        });
+
+        document.getElementById('form-edita').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let formaData = new FormData(this);
+            fetch('actualizar.php', {
+                method: 'POST',
+                body: formaData
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') {
+                    bootstrap.Modal.getInstance(editaModal).hide();
+                    getData();
+                }
+            }).catch(err => console.log(err));
+        });
+
+        document.getElementById('form-elimina').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let formaData = new FormData(this);
+            fetch('eliminar_registro.php', {
+                method: 'POST',
+                body: formaData
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') {
+                    bootstrap.Modal.getInstance(eliminaModal).hide();
+                    getData();
+                }
+            }).catch(err => console.log(err));
+        });
+
+        const nuevoModal = document.getElementById('nuevoModal');
+        nuevoModal.addEventListener('hidden.bs.modal', event => {
+            document.getElementById('form-nuevo').reset();
+        });
+
+        document.getElementById('form-nuevo').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let formaData = new FormData(this);
+            fetch('crear_registro.php', {
+                method: 'POST',
+                body: formaData
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') {
+                    bootstrap.Modal.getInstance(nuevoModal).hide();
+                    getData();
+                }
+            }).catch(err => console.log(err));
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+
+</html>
