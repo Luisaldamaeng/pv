@@ -5,12 +5,12 @@ import os
 # --- CONFIGURACIÓN ---
 # Modifica estas variables con tus datos
 
-DBF_FILE_PATH = r'C:\xampp\htdocs\busqueda\tablas\producto.dbf' # ¡IMPORTANTE! Cambia esto a la ruta de tu archivo DBF
+DBF_FILE_PATH = r'C:\xampp\htdocs\pv\producto.dbf' # ¡IMPORTANTE! Cambia esto a la ruta de tu archivo DBF
 MYSQL_CONFIG = {
     'host': 'localhost',
     'user': 'root',      # Asegúrate de que sea 'root' si es el usuario por defecto de XAMPP
     'password': '',      # Asegúrate de que esté VACÍA si no has puesto contraseña
-    'database': 'almacen' # Cambia esto por el nombre de tu base de datos
+    'database': 'pv' # Cambia esto por el nombre de tu base de datos
 }
 # --- FIN DE LA CONFIGURACIÓN ---
 

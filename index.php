@@ -50,43 +50,54 @@ session_start();
 <body>
     <main>
         <div class="container py-4 text-center">
-            <h2>Productos</h2>
+                        <div class="row">
+                <div class="col-12 text-center">
+                    <h2>Productos <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#nuevoModal">Nuevo</button></h2>
+                </div>
+            </div>
 
-            <div class="row g-4">
-                <div class="col-auto text-start">
-                    <label for="num_registros" class="col-form-label">Mostrar: </label>
-                </div>
-                <div class="col-auto text-start">
-                    <select name="num_registros" id="num_registros" class="form-select">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100" selected>100</option>
-                    </select>
-                </div>
-                <div class="col-auto text-start">
-                    <label for="num_registros" class="col-form-label">registros </label>
+            <div class="row g-4 justify-content-center pt-3">
+                <div class="col-auto">
+                    <div class="row g-2">
+                        <div class="col-auto">
+                            <label for="num_registros" class="col-form-label">Mostrar:</label>
+                        </div>
+                        <div class="col-auto">
+                            <select name="num_registros" id="num_registros" class="form-select form-select-sm">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100" selected>100</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <label for="num_registros" class="col-form-label">registros</label>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="input-group">
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
                         <label for="busqueda_codigoprod" class="input-group-text label-naranja">cod prod</label>
                         <input type="text" class="form-control" id="busqueda_codigoprod" name="busqueda_codigoprod">
                     </div>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="input-group">
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
                         <label for="busqueda_codbar" class="input-group-text label-naranja">codbar</label>
                         <input type="text" class="form-control" id="busqueda_codbar" name="busqueda_codbar">
                     </div>
                 </div>
 
-                <div class="col-md-2">
-                    <div class="input-group">
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
                         <label for="campo" class="input-group-text">Buscar:</label>
                         <input type="text" name="campo" id="campo" class="form-control">
                     </div>
+                </div>
+                <div class="col-auto">
+                    <button type="button" id="btn-limpiar" class="btn btn-secondary btn-sm">Limpiar</button>
                 </div>
             </div>
 
@@ -119,11 +130,7 @@ session_start();
                 <input type="hidden" id="orderType" value="asc">
             </div>
 
-            <div class="row mt-4">
-                <div class="col text-center">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoModal">Nuevo</button>
-                </div>
-            </div>
+            
         </div>
     </main>
 
@@ -137,10 +144,7 @@ session_start();
                 </div>
                 <div class="modal-body">
                     <form id="form-nuevo" action="crear_registro.php" method="post">
-                        <div class="mb-3">
-                            <label for="nuevo-codigoprod" class="form-label">Código de Producto</label>
-                            <input type="text" class="form-control" id="nuevo-codigoprod" name="codigoprod" required>
-                        </div>
+                        
                         <div class="mb-3">
                             <label for="nuevo-nombre" class="form-label">Nombre</label>
                             <input type="text" class="form-control" id="nuevo-nombre" name="nombre" required>
@@ -312,7 +316,14 @@ session_start();
         document.getElementById("campo").addEventListener("keyup", resetPagina);
         document.getElementById("busqueda_codigoprod").addEventListener("keyup", resetPagina);
         document.getElementById("busqueda_codbar").addEventListener("keyup", resetPagina);
-        document.getElementById("num_registros").addEventListener("change", getData);
+                    document.getElementById("num_registros").addEventListener("change", getData);
+
+            document.getElementById("btn-limpiar").addEventListener("click", function() {
+                document.getElementById("busqueda_codigoprod").value = "";
+                document.getElementById("busqueda_codbar").value = "";
+                document.getElementById("campo").value = "";
+                getData();
+            });
 
         let columns = document.querySelectorAll(".sort");
         columns.forEach(column => {
