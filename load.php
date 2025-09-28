@@ -9,11 +9,16 @@ $id = 'codigoprod';
     $campo = isset($_POST['campo']) ? $conn->real_escape_string($_POST['campo']) : null;
     $busqueda_codigoprod = isset($_POST['busqueda_codigoprod']) ? $conn->real_escape_string($_POST['busqueda_codigoprod']) : null;
     $busqueda_codbar = isset($_POST['busqueda_codbar']) ? $conn->real_escape_string($_POST['busqueda_codbar']) : null;
+    $filtro_selecc = isset($_POST['filtro_selecc']) ? $_POST['filtro_selecc'] : '0';
 
     $where = '';
     $params = [];
     $types = '';
     $whereConditions = [];
+
+    if ($filtro_selecc === '1') {
+        $whereConditions[] = "selecc = 1";
+    }
 
     if (!empty($busqueda_codigoprod)) {
         $whereConditions[] = "codigoprod LIKE ?";
@@ -84,7 +89,8 @@ if ($num_rows > 0) {
         $output['data'] .= '<td contenteditable="true" data-col="nombre" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . htmlspecialchars($row['nombre'] ?? '') . '</td>';
         $output['data'] .= '<td contenteditable="true" data-col="precio1" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . number_format($row['precio1'] ?? 0, 0, ',', '.') . '</td>';
         $output['data'] .= '<td contenteditable="true" data-col="codbar" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . htmlspecialchars($row['codbar'] ?? '') . '</td>';
-        $output['data'] .= '<td contenteditable="true" data-col="selecc" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . htmlspecialchars($row['selecc'] ?? '') . '</td>';
+        $checked = ($row['selecc'] ?? 0) == 1 ? 'checked' : '';
+        $output['data'] .= '<td class="text-center"><input type="checkbox" class="form-check-input selecc-checkbox" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '" ' . $checked . '></td>';
         $output['data'] .= '<td contenteditable="true" data-col="costo" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . number_format($row['costo'] ?? 0, 0, ',', '.') . '</td>';
         
         $editButton = '<a class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editaModal" ';
@@ -103,15 +109,47 @@ if ($num_rows > 0) {
     $output['data'] .= '<tr><td colspan="8">Sin resultados</td></tr>';
 }
 
-if ($totalRegistros > 0) {
+if ($totalFiltro > 0) {
     $totalPaginas = ceil($totalFiltro / $limit);
-    $output['paginacion'] .= '<nav><ul class="pagination">';
-    $numeroInicio = max(1, $pagina - 4);
-    $numeroFin = min($totalPaginas, $numeroInicio + 9);
-    for ($i = $numeroInicio; $i <= $numeroFin; $i++) {
-        $output['paginacion'] .= '<li class="page-item' . ($pagina == $i ? ' active' : '') . '"><a class="page-link" href="#" onclick="nextPage(' . $i . ')">' . $i . '</a></li>';
+
+    if ($totalPaginas > 1) {
+        $output['paginacion'] .= '<nav><ul class="pagination">';
+
+        // Botón Anterior
+        $paginaAnterior = $pagina - 1;
+        $deshabilitadoAnterior = ($pagina <= 1) ? " disabled" : "";
+        $output['paginacion'] .= "<li class=\"page-item{$deshabilitadoAnterior}\"><a class=\"page-link\" href=\"#\" onclick=\"nextPage({$paginaAnterior})\">Anterior</a></li>";
+
+        // Números de página
+        $numeroInicio = max(1, $pagina - 2);
+        $numeroFin = min($totalPaginas, $pagina + 2);
+
+        if ($numeroInicio > 1) {
+            $output['paginacion'] .= '<li class="page-item"><a class="page-link" href="#" onclick="nextPage(1)">1</a></li>';
+            if ($numeroInicio > 2) {
+                $output['paginacion'] .= '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+        }
+
+        for ($i = $numeroInicio; $i <= $numeroFin; $i++) {
+            $claseActiva = ($pagina == $i) ? ' active' : '';
+            $output['paginacion'] .= "<li class=\"page-item{$claseActiva}\"><a class=\"page-link\" href=\"#\" onclick=\"nextPage({$i})\">{$i}</a></li>";
+        }
+
+        if ($numeroFin < $totalPaginas) {
+            if ($numeroFin < $totalPaginas - 1) {
+                $output['paginacion'] .= '<li class="page-item disabled"><span class="page-link">...</span></li>';
+            }
+            $output['paginacion'] .= "<li class=\"page-item\"><a class=\"page-link\" href=\"#\" onclick=\"nextPage({$totalPaginas})\">{$totalPaginas}</a></li>";
+        }
+
+        // Botón Siguiente
+        $paginaSiguiente = $pagina + 1;
+        $deshabilitadoSiguiente = ($pagina >= $totalPaginas) ? " disabled" : "";
+        $output['paginacion'] .= "<li class=\"page-item{$deshabilitadoSiguiente}\"><a class=\"page-link\" href=\"#\" onclick=\"nextPage({$paginaSiguiente})\">Siguiente</a></li>";
+
+        $output['paginacion'] .= '</ul></nav>';
     }
-    $output['paginacion'] .= '</ul></nav>';
 }
 
 echo json_encode($output, JSON_UNESCAPED_UNICODE);

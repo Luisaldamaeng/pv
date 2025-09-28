@@ -110,7 +110,7 @@ session_start();
                             <th class="sort asc">Nombre</th>
                             <th class="sort asc">Precio 1</th>
                             <th class="sort asc">Cód. Barra</th>
-                            <th class="sort asc">Selecc</th>
+                            <th id="filtro-selecc" style="cursor: pointer;">Selecc <span id="filtro-selecc-icono"></span></th>
                             <th class="sort asc">Costo</th>
                             <th></th>
                             <th></th>
@@ -128,6 +128,7 @@ session_start();
                 <input type="hidden" id="pagina" value="1">
                 <input type="hidden" id="orderCol" value="0">
                 <input type="hidden" id="orderType" value="asc">
+                <input type="hidden" id="filtroSeleccActivo" value="0">
             </div>
 
             
@@ -157,9 +158,9 @@ session_start();
                             <label for="nuevo-codbar" class="form-label">Código de Barra</label>
                             <input type="text" class="form-control" id="nuevo-codbar" name="codbar">
                         </div>
-                        <div class="mb-3">
-                            <label for="nuevo-selecc" class="form-label">Selecc</label>
-                            <input type="text" class="form-control" id="nuevo-selecc" name="selecc">
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="nuevo-selecc" name="selecc">
+                            <label for="nuevo-selecc" class="form-check-label">Seleccionado</label>
                         </div>
                         <div class="mb-3">
                             <label for="nuevo-costo" class="form-label">Costo</label>
@@ -198,9 +199,9 @@ session_start();
                             <label for="codbar" class="form-label">Código de Barra</label>
                             <input type="text" class="form-control" id="codbar" name="codbar">
                         </div>
-                        <div class="mb-3">
-                            <label for="selecc" class="form-label">Selecc</label>
-                            <input type="text" class="form-control" id="selecc" name="selecc">
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="selecc" name="selecc">
+                            <label for="selecc" class="form-check-label">Seleccionado</label>
                         </div>
                         <div class="mb-3">
                             <label for="costo" class="form-label">Costo</label>
@@ -239,7 +240,24 @@ session_start();
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", getData);
+        document.addEventListener("DOMContentLoaded", function() {
+            getData();
+
+            document.getElementById("filtro-selecc").addEventListener("click", function() {
+                const filtroInput = document.getElementById("filtroSeleccActivo");
+                const icono = document.getElementById("filtro-selecc-icono");
+                
+                if (filtroInput.value === "1") {
+                    filtroInput.value = "0";
+                    icono.innerHTML = ""; // Limpiar ícono
+                } else {
+                    filtroInput.value = "1";
+                    icono.innerHTML = " &#128279;"; // Ícono de filtro
+                }
+                
+                resetPagina();
+            });
+        });
 
         function getData() {
             let input = document.getElementById("campo").value;
@@ -250,6 +268,7 @@ session_start();
             let pagina = document.getElementById("pagina").value || 1;
             let orderCol = document.getElementById("orderCol").value;
             let orderType = document.getElementById("orderType").value;
+            let filtroSelecc = document.getElementById("filtroSeleccActivo").value;
 
             let formaData = new FormData();
             formaData.append('campo', input);
@@ -259,6 +278,7 @@ session_start();
             formaData.append('pagina', pagina);
             formaData.append('orderCol', orderCol);
             formaData.append('orderType', orderType);
+            formaData.append('filtro_selecc', filtroSelecc);
 
             fetch("load.php", {
                 method: "POST",
@@ -288,11 +308,26 @@ session_start();
 
         function ordenar(e) {
             let elemento = e.target;
-            let orderType = elemento.classList.contains("asc") ? "desc" : "asc";
+            let orderType;
+
+            // Caso especial para la columna 'Cód. Prod.' (índice 1)
+            if (elemento.cellIndex === 1) {
+                orderType = 'asc';
+                if (elemento.classList.contains("desc")) {
+                    elemento.classList.remove("desc");
+                }
+                if (!elemento.classList.contains("asc")) {
+                    elemento.classList.add("asc");
+                }
+            } else {
+                // Lógica de alternancia existente para las demás columnas
+                orderType = elemento.classList.contains("asc") ? "desc" : "asc";
+                elemento.classList.toggle("asc");
+                elemento.classList.toggle("desc");
+            }
+
             document.getElementById('orderCol').value = elemento.cellIndex;
             document.getElementById("orderType").value = orderType;
-            elemento.classList.toggle("asc");
-            elemento.classList.toggle("desc");
             getData();
         }
 
@@ -345,7 +380,7 @@ session_start();
             editaModal.querySelector('.modal-body #nombre').value = button.getAttribute('data-nombre');
             editaModal.querySelector('.modal-body #precio1').value = button.getAttribute('data-precio1');
             editaModal.querySelector('.modal-body #codbar').value = button.getAttribute('data-codbar');
-            editaModal.querySelector('.modal-body #selecc').value = button.getAttribute('data-selecc');
+            editaModal.querySelector('.modal-body #selecc').checked = button.getAttribute('data-selecc') == 1;
             editaModal.querySelector('.modal-body #costo').value = button.getAttribute('data-costo');
         });
 
@@ -354,6 +389,35 @@ session_start();
             const button = event.relatedTarget;
             const id = button.getAttribute('data-id');
             eliminaModal.querySelector('.modal-footer #id_eliminar').value = id;
+        });
+
+        document.getElementById('content').addEventListener('change', function(e) {
+            if (e.target.classList.contains('selecc-checkbox')) {
+                const id = e.target.dataset.id;
+                const valor = e.target.checked ? 1 : 0;
+
+                let formData = new FormData();
+                formData.append('id', id);
+                formData.append('columna', 'selecc');
+                formData.append('valor', valor);
+
+                fetch('actualizar_celda.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.error('Error al actualizar el campo selecc');
+                        // Optionally, revert the checkbox state
+                        e.target.checked = !e.target.checked;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    e.target.checked = !e.target.checked;
+                });
+            }
         });
 
         document.getElementById('form-edita').addEventListener('submit', function(e) {
