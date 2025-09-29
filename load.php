@@ -21,8 +21,8 @@ $id = 'codigoprod';
     }
 
     if (!empty($busqueda_codigoprod)) {
-        $whereConditions[] = "codigoprod LIKE ?";
-        $params[] = "%" . $busqueda_codigoprod . "%";
+        $whereConditions[] = "codigoprod = ?";
+        $params[] = $busqueda_codigoprod;
         $types .= 's';
     }
     
