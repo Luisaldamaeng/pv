@@ -44,6 +44,61 @@ session_start();
             font-weight: bold;
             border-color: orange;
         }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            /* --- Estilos para Impresión de Tabla --- */
+            #print-area .table .btn,
+            #print-area .puntero-celda,
+            #print-area thead th:first-child,
+            #print-area thead th:nth-last-child(1),
+            #print-area thead th:nth-last-child(2) {
+                display: none;
+            }
+
+            /* --- Estilos para Impresión de Etiquetas --- */
+            #print-area .label-print-container {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0;
+                width: 100%;
+            }
+            #print-area .label-item {
+                border: 1px solid #000;
+                padding: 10px;
+                text-align: center;
+                font-family: Arial, sans-serif;
+                page-break-inside: avoid;
+            }
+            #print-area .label-code {
+                text-align: left;
+                font-size: 22pt;
+            }
+            #print-area .label-name {
+                font-weight: bold;
+                font-size: 16pt;
+                text-transform: uppercase;
+                margin: 10px 0;
+                min-height: 50px; /* Para alinear precios */
+            }
+            #print-area .label-price {
+                font-weight: bold;
+                font-size: 22pt;
+                text-align: right;
+            }
+        }
     </style>
 </head>
 
@@ -98,6 +153,12 @@ session_start();
                 </div>
                 <div class="col-auto">
                     <button type="button" id="btn-limpiar" class="btn btn-secondary btn-sm">Limpiar</button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" id="btn-imprimir" class="btn btn-info btn-sm">Imprimir</button>
+                </div>
+                <div class="col-auto">
+                    <button type="button" id="btn-etiquetas" class="btn btn-success btn-sm">Etiquetas</button>
                 </div>
             </div>
 
@@ -466,8 +527,51 @@ session_start();
                 }
             }).catch(err => console.log(err));
         });
+
+        document.getElementById("btn-imprimir").addEventListener("click", function() {
+            const tablaContainer = document.querySelector(".row.py-4").cloneNode(true);
+            const printArea = document.getElementById("print-area");
+            printArea.innerHTML = ""; // Limpiar área
+            printArea.appendChild(tablaContainer);
+            window.print();
+        });
+
+        document.getElementById("btn-etiquetas").addEventListener("click", function() {
+            const filas = document.querySelectorAll("#content tr");
+            const printArea = document.getElementById("print-area");
+            
+            let labelsHtml = '<div class="label-print-container">';
+            let productos = [];
+
+            filas.forEach(fila => {
+                if (fila.cells.length > 4) { // Asegurarse de que es una fila de datos
+                    const producto = {
+                        codigo: fila.cells[1].textContent,
+                        nombre: fila.cells[2].textContent,
+                        precio: fila.cells[3].textContent
+                    };
+                    productos.push(producto);
+                }
+            });
+
+            productos.forEach(p => {
+                labelsHtml += `
+                    <div class="label-item">
+                        <div class="label-code">${p.codigo}</div>
+                        <div class="label-name">${p.nombre}</div>
+                        <div class="label-price">${p.precio}</div>
+                    </div>
+                `;
+            });
+
+            labelsHtml += '</div>';
+            
+            printArea.innerHTML = labelsHtml;
+            window.print();
+        });
     </script>
 
+    <div id="print-area"></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 
