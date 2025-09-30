@@ -160,6 +160,9 @@ session_start();
                 <div class="col-auto">
                     <button type="button" id="btn-etiquetas" class="btn btn-success btn-sm">Etiquetas</button>
                 </div>
+                <div class="col-auto">
+                    <button type="button" id="btn-reset-selecc" class="btn btn-warning btn-sm">Poner Selecc a Cero</button>
+                </div>
             </div>
 
             <div class="row py-4">
@@ -568,6 +571,27 @@ session_start();
             
             printArea.innerHTML = labelsHtml;
             window.print();
+        });
+
+        document.getElementById("btn-reset-selecc").addEventListener("click", function() {
+            if (confirm("¿Está seguro de que desea poner a cero la columna 'selecc' para todos los registros?")) {
+                fetch('reset_selecc.php', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert("La columna 'selecc' ha sido actualizada a 0 para todos los registros.");
+                        getData(); // Refresh the table
+                    } else {
+                        alert("Hubo un error al actualizar los registros.");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Hubo un error de red.");
+                });
+            }
         });
     </script>
 
