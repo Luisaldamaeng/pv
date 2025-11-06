@@ -1,0 +1,141 @@
+<!-- Guarda este archivo como index.html en: C:\xampp\htdocs\PV\lector de codigo QR -->
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Lector QR - JavaScript</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 1rem; background:#f7f7f7; }
+        #video { width:100%; max-width:600px; border:1px solid #ccc; background:#000; }
+        #controls { margin-top:.5rem; }
+        #output { margin-top:1rem; padding:.5rem; background:#fff; border:1px solid #ddd; max-width:600px; word-break:break-all; }
+        #canvas { display:none; }
+        button,input[type=file] { margin-right:.5rem; }
+    </style>
+</head>
+<body>
+    <h2>Lector de código QR</h2>
+
+    <video id="video" playsinline></video>
+
+    <div id="controls">
+        <button id="startBtn">Iniciar cámara</button>
+        <button id="stopBtn" disabled>Detener</button>
+        <label>
+            o cargar imagen:
+            <input type="file" accept="image/*" id="fileInput">
+        </label>
+    </div>
+
+    <div id="output">Resultado: <span id="result">—</span></div>
+
+    <canvas id="canvas"></canvas>
+
+    <!-- Librería jsQR -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resultEl = document.getElementById('result');
+        const fileInput = document.getElementById('fileInput');
+
+        let stream = null;
+        let scanning = false;
+        let rafId = null;
+
+        async function startCamera() {
+            // Comprobar si el navegador soporta la API
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                resultEl.textContent = 'Error: Tu navegador no soporta el acceso a la cámara.';
+                return;
+            }
+
+            try {
+                // Al solicitar video sin especificar 'facingMode', el navegador
+                // permitirá al usuario elegir la cámara si hay varias disponibles.
+                const constraints = { video: true };
+                resultEl.textContent = 'Solicitando acceso a la cámara...';
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+            } catch (err) {
+                // Manejar errores comunes como que el usuario niegue el permiso.
+                console.error("Fallo al solicitar la cámara:", err);
+                resultEl.textContent = `Error al acceder a la cámara: ${err.name}. Asegúrate de dar permiso y usar localhost o HTTPS.`;
+                return;
+            }
+
+            video.srcObject = stream;
+            await video.play();
+            scanning = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            resultEl.textContent = 'Buscando código QR...';
+            tick();
+        }
+
+        function stopCamera() {
+            scanning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            if (rafId) cancelAnimationFrame(rafId);
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+                stream = null;
+            }
+        }
+
+        function tick() {
+            if (!scanning) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (code) {
+                    resultEl.textContent = code.data;
+                    // opcional: detener tras leer
+                    // stopCamera();
+                } else {
+                    // mostrar feedback si desea:
+                    // resultEl.textContent = 'Buscando...';
+                }
+            }
+            rafId = requestAnimationFrame(tick);
+        }
+
+        function scanImageFile(file) {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (code) resultEl.textContent = code.data;
+                else resultEl.textContent = 'No se detectó QR en la imagen.';
+                URL.revokeObjectURL(url);
+            };
+            img.onerror = () => {
+                resultEl.textContent = 'No se pudo leer la imagen.';
+                URL.revokeObjectURL(url);
+            };
+            img.src = url;
+        }
+
+        startBtn.addEventListener('click', startCamera);
+        stopBtn.addEventListener('click', stopCamera);
+
+        fileInput.addEventListener('change', () => {
+            stopCamera();
+            const f = fileInput.files[0];
+            if (f) scanImageFile(f);
+        });
+
+    </script>
+</body>
+</html>

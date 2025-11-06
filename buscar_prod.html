@@ -1,0 +1,105 @@
+<!-- File: /c:/xampp/htdocs/PV/buscar_prod.html -->
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Buscar producto</title>
+    <style>
+        body{font-family:Arial, sans-serif;max-width:780px;margin:30px auto;padding:0 20px}
+        label,input,button{font-size:16px}
+        #result{margin-top:18px;border:1px solid #ddd;padding:12px;border-radius:6px}
+        table{width:100%;border-collapse:collapse}
+        th,td{padding:8px;border:1px solid #eee;text-align:left}
+        .muted{color:#666;font-size:14px}
+    </style>
+</head>
+<body>
+    <h2>Buscar producto</h2>
+    <p class="muted">Ingrese el código de producto (<=4 caracteres) o el código de barra (>4) y presione Buscar.</p>
+
+    <form id="searchForm">
+        <label for="q">Código / Código de barra:</label><br/>
+        <input id="q" name="q" type="text" autocomplete="off" required style="width:320px;margin-top:8px;padding:8px" />
+        <button type="submit" style="padding:8px 12px;margin-left:8px">Buscar</button>
+    </form>
+
+    <div id="result" aria-live="polite"></div>
+
+    <script>
+        const qInput = document.getElementById('q');
+        const result = document.getElementById('result');
+        let searchTimeout;
+
+        // Función para realizar la búsqueda
+        const doSearch = async () => {
+            const q = qInput.value.trim();
+            if (!q) { result.innerHTML = '<p class="muted">Ingrese un código.</p>'; return; }
+
+            result.innerHTML = '<p class="muted">Buscando…</p>';
+            
+            try {
+                const fd = new FormData();
+                fd.append('q', q);
+
+                const resp = await fetch('buscar_prod.php', { method: 'POST', body: fd });
+                if (!resp.ok) throw new Error('Error de red');
+
+                const json = await resp.json();
+                if (!json.success) {
+                    result.innerHTML = `<p class="muted">${escapeHtml(json.message || 'No encontrado')}</p>`;
+                    return;
+                }
+
+                const rows = json.data;
+                if (rows.length === 0) {
+                    result.innerHTML = '<p class="muted">No se encontraron productos.</p>';
+                    return;
+                }
+
+                // Construir tabla de resultados
+                let html = '<table><thead><tr>';
+                // usar claves de la primera fila para cabeceras
+                const keys = Object.keys(rows[0]);
+                for (const k of keys) html += `<th>${escapeHtml(k)}</th>`;
+                html += '</tr></thead><tbody>';
+                for (const r of rows) {
+                    html += '<tr>';
+                    for (const k of keys) {
+                        html += `<td>${escapeHtml(String(r[k] ?? '')).replace(/\r?\n|\r/g, ' ')}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                html += '</tbody></table>';
+                result.innerHTML = html;
+
+            } catch (err) {
+                result.innerHTML = `<p class="muted">Error: ${escapeHtml(err.message)}</p>`;
+            }
+        };
+
+        // Listener para el input de búsqueda (búsqueda incremental)
+        qInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(doSearch, 300); // Espera 300ms después de la última tecla para buscar
+        });
+
+        // Prevenir que el formulario se envíe con "Enter" y recargue la página
+        document.getElementById('searchForm').addEventListener('submit', (ev) => {
+            ev.preventDefault();
+            doSearch();
+        });
+
+        // pequeño helper
+        function escapeHtml(str) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            };
+            return str.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>

@@ -212,7 +212,7 @@ session_start();
                         
                         <div class="mb-3">
                             <label for="nuevo-nombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="nuevo-nombre" name="nombre" required>
+                            <input type="text" class="form-control" id="nuevo-nombre" name="nombre" required x-webkit-speech speech>
                         </div>
                         <div class="mb-3">
                             <label for="nuevo-precio1" class="form-label">Precio 1</label>
@@ -220,7 +220,7 @@ session_start();
                         </div>
                         <div class="mb-3">
                             <label for="nuevo-codbar" class="form-label">Código de Barra</label>
-                            <input type="text" class="form-control" id="nuevo-codbar" name="codbar">
+                            <input type="text" class="form-control" id="nuevo-codbar" name="codbar" x-webkit-speech speech>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="nuevo-selecc" name="selecc">
@@ -253,7 +253,7 @@ session_start();
                         <input type="hidden" id="id" name="id">
                         <div class="mb-3">
                             <label for="nombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required x-webkit-speech speech>
                         </div>
                         <div class="mb-3">
                             <label for="precio1" class="form-label">Precio 1</label>
@@ -261,7 +261,7 @@ session_start();
                         </div>
                         <div class="mb-3">
                             <label for="codbar" class="form-label">Código de Barra</label>
-                            <input type="text" class="form-control" id="codbar" name="codbar">
+                            <input type="text" class="form-control" id="codbar" name="codbar" x-webkit-speech speech>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="selecc" name="selecc">
@@ -484,6 +484,76 @@ session_start();
             }
         });
 
+        // --- Listener para edición en línea ---
+        document.getElementById('content').addEventListener('blur', function(e) {
+            const target = e.target;
+            // Asegurarse de que el evento viene de una celda editable (TD con contenteditable)
+            if (target.tagName === 'TD' && target.isContentEditable) {
+                const id = target.dataset.id;
+                const columna = target.dataset.col;
+                let valor = target.textContent.trim();
+
+                // Para columnas numéricas, limpiar el formato antes de enviar
+                if (columna === 'precio1' || columna === 'costo') {
+                    // Eliminar puntos de miles
+                    valor = valor.replace(/\./g, '');
+                    // Reemplazar coma decimal por punto si se usa
+                    // valor = valor.replace(/,/g, '.'); 
+                }
+
+                let formData = new FormData();
+                formData.append('id', id);
+                formData.append('columna', columna);
+                formData.append('valor', valor);
+
+                // Guardar el valor original en caso de error
+                const originalValue = target.innerHTML;
+
+                fetch('actualizar_celda.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        console.error('Error al actualizar:', data.message);
+                        alert('Error al actualizar: ' + data.message);
+                        target.innerHTML = originalValue; // Revertir al valor original
+                    }
+                    // Si es exitoso, no es necesario hacer nada, el valor ya está en la celda.
+                    // Opcional: podrías recargar los datos para obtener el formato correcto del servidor.
+                    // getData(); 
+                })
+                .catch(err => console.error(err));
+            }
+        }, true); // Usar captura para asegurar que el evento se maneje correctamente
+
+        // --- Listener para navegar con "Enter" en celdas editables ---
+        document.getElementById('content').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const target = e.target;
+
+                // Asegurarse de que estamos en una celda editable
+                if (target.tagName === 'TD' && target.isContentEditable) {
+                    e.preventDefault(); // Prevenir el salto de línea
+
+                    const currentRow = target.closest('tr');
+                    const cells = Array.from(currentRow.querySelectorAll('td[contenteditable="true"]'));
+                    const currentIndex = cells.indexOf(target);
+
+                    // Encontrar la siguiente celda editable en la misma fila
+                    if (currentIndex > -1 && currentIndex < cells.length - 1) {
+                        const nextCell = cells[currentIndex + 1];
+                        nextCell.focus();
+                    } else {
+                        // Opcional: si es la última celda, simplemente quitar el foco para guardar
+                        target.blur();
+                    }
+                }
+            }
+        });
+
+
         document.getElementById('form-edita').addEventListener('submit', function(e) {
             e.preventDefault();
             let formaData = new FormData(this);
@@ -515,6 +585,11 @@ session_start();
         const nuevoModal = document.getElementById('nuevoModal');
         nuevoModal.addEventListener('hidden.bs.modal', event => {
             document.getElementById('form-nuevo').reset();
+        });
+
+        // Poner foco en el campo nombre cuando el modal de nuevo producto se muestra
+        nuevoModal.addEventListener('shown.bs.modal', () => {
+            document.getElementById('nuevo-nombre').focus();
         });
 
         document.getElementById('form-nuevo').addEventListener('submit', function(e) {

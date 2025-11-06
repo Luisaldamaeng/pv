@@ -85,13 +85,13 @@ if ($num_rows > 0) {
     while ($row = $resultado->fetch_assoc()) {
         $output['data'] .= '<tr>';
         $output['data'] .= '<td class="puntero-celda"></td>';
-        $output['data'] .= '<td>' . htmlspecialchars($row['codigoprod'] ?? '') . '</td>';
-        $output['data'] .= '<td contenteditable="true" data-col="nombre" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . htmlspecialchars($row['nombre'] ?? '') . '</td>';
-        $output['data'] .= '<td contenteditable="true" data-col="precio1" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . number_format($row['precio1'] ?? 0, 0, ',', '.') . '</td>';
-        $output['data'] .= '<td contenteditable="true" data-col="codbar" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . htmlspecialchars($row['codbar'] ?? '') . '</td>';
+        $output['data'] .= '<td>' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+        $output['data'] .= '<td contenteditable="true" data-col="nombre" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['nombre'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+        $output['data'] .= '<td contenteditable="true" data-col="precio1" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . number_format($row['precio1'] ?? 0, 0, ',', '.') . '</td>';
+        $output['data'] .= '<td contenteditable="true" data-col="codbar" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['codbar'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         $checked = ($row['selecc'] ?? 0) == 1 ? 'checked' : '';
-        $output['data'] .= '<td class="text-center"><input type="checkbox" class="form-check-input selecc-checkbox" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '" ' . $checked . '></td>';
-        $output['data'] .= '<td contenteditable="true" data-col="costo" data-id="' . htmlspecialchars($row['codigoprod'] ?? '') . '">' . number_format($row['costo'] ?? 0, 0, ',', '.') . '</td>';
+        $output['data'] .= '<td class="text-center"><input type="checkbox" class="form-check-input selecc-checkbox" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '" ' . $checked . '></td>';
+        $output['data'] .= '<td contenteditable="true" data-col="costo" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . number_format($row['costo'] ?? 0, 0, ',', '.') . '</td>';
         
         $editButton = '<a class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editaModal" ';
         $editButton .= 'data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
