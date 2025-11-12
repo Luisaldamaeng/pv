@@ -2,7 +2,7 @@
 
 require 'config.php';
 
-$columns = ['codigoprod', 'nombre', 'precio1', 'codbar', 'selecc', 'costo'];
+$columns = ['codigoprod', 'nombre', 'precio1', 'codbar', 'selecc', 'costo', 'CANTCAJA', 'CODNUMERI'];
 $table = "producto";
 $id = 'codigoprod';
 
@@ -27,15 +27,20 @@ $id = 'codigoprod';
     }
     
     if (!empty($busqueda_codbar)) {
-        $whereConditions[] = "codbar LIKE ?";
-        $params[] = "%" . $busqueda_codbar . "%";
+        $whereConditions[] = "codbar = ?";
+        $params[] = $busqueda_codbar;
         $types .= 's';
     }
     
     if (!empty($campo)) {
-        $whereConditions[] = "nombre LIKE ?";
-        $params[] = "%" . $campo . "%";
-        $types .= 's';
+        // Dividir la frase de búsqueda en palabras individuales
+        $palabras = explode(' ', $campo);
+        // Crear una condición LIKE para cada palabra
+        foreach ($palabras as $palabra) {
+            $whereConditions[] = "nombre LIKE ?";
+            $params[] = "%" . $palabra . "%";
+            $types .= 's';
+        }
     }
 
     if (!empty($whereConditions)) {
@@ -52,7 +57,12 @@ if (isset($_POST['orderCol'])) {
     $orderCol = intval($_POST['orderCol']);
     $orderType = isset($_POST['orderType']) ? $_POST['orderType'] : 'asc';
     if (in_array(strtolower($orderType), ['asc', 'desc']) && isset($columns[$orderCol])) {
-        $sOrder = "ORDER BY " . $columns[$orderCol] . ' ' . $orderType;
+        $columnaOrdenar = $columns[$orderCol];
+        // Si la columna es 'nombre', la ordenamos usando LOWER para que sea insensible a mayúsculas/minúsculas
+        if ($columnaOrdenar === 'nombre') {
+            $columnaOrdenar = "LOWER(nombre)";
+        }
+        $sOrder = "ORDER BY " . $columnaOrdenar . ' ' . $orderType;
     }
 }
 
@@ -91,7 +101,9 @@ if ($num_rows > 0) {
         $output['data'] .= '<td contenteditable="true" data-col="codbar" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['codbar'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         $checked = ($row['selecc'] ?? 0) == 1 ? 'checked' : '';
         $output['data'] .= '<td class="text-center"><input type="checkbox" class="form-check-input selecc-checkbox" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '" ' . $checked . '></td>';
-        $output['data'] .= '<td contenteditable="true" data-col="costo" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . number_format($row['costo'] ?? 0, 0, ',', '.') . '</td>';
+        $output['data'] .= '<td contenteditable="true" data-col="costo" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . number_format((float)($row['costo'] ?? 0), 0, ',', '.') . '</td>';
+        $output['data'] .= '<td contenteditable="true" data-col="CANTCAJA" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['CANTCAJA'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+        $output['data'] .= '<td contenteditable="true" data-col="CODNUMERI" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['CODNUMERI'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         
         $editButton = '<a class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editaModal" ';
         $editButton .= 'data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
@@ -99,6 +111,8 @@ if ($num_rows > 0) {
         $editButton .= 'data-costo="' . htmlspecialchars($row['costo'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
         $editButton .= 'data-precio1="' . htmlspecialchars($row['precio1'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
         $editButton .= 'data-codbar="' . htmlspecialchars($row['codbar'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $editButton .= 'data-cantcaja="' . htmlspecialchars($row['CANTCAJA'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $editButton .= 'data-codnumeri="' . htmlspecialchars($row['CODNUMERI'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
         $editButton .= 'data-selecc="' . htmlspecialchars($row['selecc'] ?? '', ENT_QUOTES, 'UTF-8') . '">Editar</a>';
 
         $output['data'] .= '<td>' . $editButton . '</td>';
@@ -106,7 +120,7 @@ if ($num_rows > 0) {
         $output['data'] .= '</tr>';
     }
 } else {
-    $output['data'] .= '<tr><td colspan="8">Sin resultados</td></tr>';
+    $output['data'] .= '<tr><td colspan="11">Sin resultados</td></tr>';
 }
 
 if ($totalFiltro > 0) {

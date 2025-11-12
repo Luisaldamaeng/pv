@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Botones</title>
+<style>
+body {
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Nota_de_100_reais_%28dinheiro_do_Brasil%29.jpg/600px-Nota_de_100_reais_%28dinheiro_do_Brasil%29.jpg'), url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/ARG-1000_Pesos-2017-obverse.jpg/640px-ARG-1000_Pesos-2017-obverse.jpg'), url('https://upload.wikimedia.org/wikipedia/commons/f/f7/50000_Guaran%C3%ADes.jpg');
+  background-position: top left, top center, top right;
+  background-repeat: no-repeat;
+  background-size: 33.33% auto;
+  background-color: lightblue; /* Fondo celeste */
+  margin: 0;
+}
+
+.main-title {
+  text-align: center;
+  color: red;
+  padding-top: 20px;
+  text-shadow: 2px 2px 4px #000000;
+}
+
+.button-container {
+  display: flex;
+  justify-content: space-around; /* Distribuye las columnas */
+  align-items: flex-start; /* Alinea las columnas arriba */
+  height: 100vh;
+  padding: 20px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column; /* Apila los botones verticalmente */
+  align-items: center;
+}
+
+button {
+  margin: 5px; /* Botones más juntos */
+  padding: 15px 25px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  background-color: limegreen; /* Color verde limón */
+  color: red;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px #228B22; /* Sombra verde oscuro */
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background-color: #228B22; /* Verde oscuro al pasar el ratón */
+}
+</style>
+</head>
+<body>
+<h1 class="main-title">Menu Principal</h1>
+<div class="button-container">
+  <div class="column">
+    <button onclick="window.open('http://192.168.1.152/PV/buscar_prod.html', '_blank')">buscar_prod</button>
+    <button onclick="window.open('http://192.168.1.152/PV/lector de codigo QR.html', '_blank')">lector de codigo QR</button>
+    <button onclick="window.open('http://192.168.1.152/PV/visor_xml.html', '_blank')">visor_xml</button>
+  </div>
+  <div class="column">
+    <button onclick="window.open('http://192.168.1.152/PV/productos.php', '_blank')">producto</button>
+    <button onclick="window.open('http://192.168.1.152/libreta/carga_datos.php', '_blank')">carga_datos</button>
+    <button onclick="window.open('http://192.168.1.152/costo_mercaderia.html', '_blank')">costo_mercaderia</button>
+  </div>
+  <div class="column">
+    <button onclick="window.open('http://192.168.1.152/libreta/crud_clientes.php', '_blank')">crud_clientes</button>
+    <button onclick="window.open('http://192.168.1.152/libreta/editar_libreta.php', '_blank')">editar_libreta</button>
+    <button onclick="window.open('http://192.168.1.152/costo_caramelo.html', '_blank')">costo_caramelo</button>
+  </div>
+</div>
+
+</body>
+</html>

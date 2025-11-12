@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Precios Mercaderias</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // Define la fuente Inter
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Aplica la fuente Inter al cuerpo del documento */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://placehold.co/1920x1080/A3E635/333333?text=Billetes+Gs.+100.000'); /* Imagen de marcador de posición */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        /* Estilo para input de solo lectura (ahora solo Precio Venta) */
+        #precio_venta[readonly] {
+            background-color: #f3f4f6; /* bg-gray-100 */
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
+        <h1 class="text-2xl font-bold text-center mb-6 text-indigo-600">Calculador Precios Mercaderias</h1>
+
+        <form id="price-calculator-form">
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="porcentaje" class="block mb-1 text-sm font-medium text-gray-700">Porcentaje (%)</label>
+                    <input type="number" id="porcentaje" name="porcentaje" value="20" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: 20">
+                </div>
+                <div>
+                    <label for="precio_caja" class="block mb-1 text-sm font-medium text-gray-700">Precio por Caja</label>
+                    <input type="text" id="precio_caja" name="precio_caja" inputmode="decimal" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: 1000">
+                </div>
+            </div>
+
+             <div class="mb-4">
+                 <label for="cantidad" class="block mb-1 text-sm font-medium text-gray-700">Cantidad</label>
+                 <input type="number" id="cantidad" name="cantidad" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div class="mb-4">
+                 <label for="precio_costo" class="block mb-1 text-sm font-medium text-gray-700">Precio Costo</label>
+                 <input type="text" id="precio_costo" name="precio_costo" inputmode="decimal" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+
+            <div class="mb-6">
+                 <label for="precio_venta" class="block mb-1 text-sm font-medium text-gray-700">Precio Venta (Calculado)</label>
+                  <input type="text" id="precio_venta" name="precio_venta" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" readonly>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                 <button type="button" id="clear-button" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-md transition duration-200 ease-in-out shadow hover:shadow-md">
+                    Limpiar
+                </button>
+                 <button type="submit" id="add-button" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200 ease-in-out shadow hover:shadow-md">
+                    Agregar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // --- Elementos del DOM ---
+        const clearButton = document.getElementById('clear-button');
+        const form = document.getElementById('price-calculator-form');
+        const porcentajeInput = document.getElementById('porcentaje');
+        const precioCajaInput = document.getElementById('precio_caja');
+        const cantidadInput = document.getElementById('cantidad');
+        const precioCostoInput = document.getElementById('precio_costo'); // Ahora editable
+        const precioVentaInput = document.getElementById('precio_venta');
+        const addButton = document.getElementById('add-button');
+
+        // --- Función para parsear número formateado ---
+        function parseFormattedNumber(str) {
+            if (typeof str !== 'string' || str.trim() === '') return NaN; // Manejar string vacío
+            const cleanedStr = str.replace(/\./g, '');
+            // const normalizedStr = cleanedStr.replace(/,/g, '.'); // Si se usa coma decimal
+            const num = parseFloat(cleanedStr); // Usar cleanedStr si locale es es-ES
+            return isNaN(num) ? NaN : num;
+        }
+
+        // --- Función para formatear números para OUTPUT (venta) ---
+        function formatOutputNumber(num) {
+            return Math.round(num).toLocaleString('es-ES');
+        }
+
+         // --- Función para formatear números para INPUT (precio caja, precio costo en blur) ---
+         function formatInputNumber(num) {
+            return num.toLocaleString('es-ES', { maximumFractionDigits: 20 });
+         }
+
+        // --- Función para calcular y actualizar el Precio Venta ---
+        // Ahora considera ambas fuentes para el costo (calculado o manual)
+        function calcularPrecioVenta() {
+            const porcentaje = parseFloat(porcentajeInput.value);
+            let costoFinal = NaN;
+
+            // Intentar calcular costo desde Precio Caja y Cantidad
+            const precioCaja = parseFormattedNumber(precioCajaInput.value);
+            const cantidad = parseFloat(cantidadInput.value);
+            if (!isNaN(precioCaja) && !isNaN(cantidad) && cantidad !== 0) {
+                costoFinal = precioCaja / cantidad; // Prioridad 1: Costo calculado
+            } else {
+                // Si no se pudo calcular, intentar usar el costo manual
+                const costoManual = parseFormattedNumber(precioCostoInput.value);
+                if (!isNaN(costoManual)) {
+                    costoFinal = costoManual; // Prioridad 2: Costo manual
+                }
+            }
+
+            // Si tenemos un costo válido y un porcentaje válido, calcular venta
+            if (!isNaN(costoFinal) && !isNaN(porcentaje)) {
+                 const venta = costoFinal * (1 + porcentaje / 100);
+                 precioVentaInput.value = formatOutputNumber(venta);
+            } else {
+                 // Si no hay costo válido o porcentaje válido, limpiar venta
+                 precioVentaInput.value = '';
+            }
+        }
+
+        // --- Función para calcular y actualizar el Precio Costo (desde Caja/Cantidad) ---
+        // Esta función AHORA TAMBIÉN actualiza el campo Precio Costo
+        function calcularPrecioCostoDesdeInputs() {
+            const precioCaja = parseFormattedNumber(precioCajaInput.value);
+            const cantidad = parseFloat(cantidadInput.value);
+
+            if (!isNaN(precioCaja) && !isNaN(cantidad) && cantidad !== 0) {
+                const costo = precioCaja / cantidad;
+                // Actualizar el campo Precio Costo con el valor calculado y formateado
+                // Esto SOBREESCRIBE cualquier valor manual si Caja/Cantidad son válidos
+                precioCostoInput.value = formatInputNumber(costo);
+                calcularPrecioVenta(); // Recalcular venta basado en el costo recién calculado
+            } else {
+                 // Si Caja o Cantidad no son válidos, NO limpiamos el costo manual
+                 // pero sí recalculamos la venta (que podría usar el costo manual si existe)
+                 calcularPrecioVenta();
+            }
+        }
+
+        // --- Función para manejar la tecla Enter ---
+        function handleEnterNavigation(event, nextElementId) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const nextElement = document.getElementById(nextElementId);
+                if (nextElement) {
+                    nextElement.focus();
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+        // Inputs que disparan el cálculo de COSTO (y VENTA en cadena)
+        precioCajaInput.addEventListener('input', calcularPrecioCostoDesdeInputs);
+        cantidadInput.addEventListener('input', calcularPrecioCostoDesdeInputs);
+
+        // Input que dispara el recálculo completo (Costo y Venta)
+        porcentajeInput.addEventListener('input', calcularPrecioCostoDesdeInputs);
+        // ¡NUEVO! Input MANUAL de Precio Costo también dispara cálculo de VENTA
+        precioCostoInput.addEventListener('input', calcularPrecioVenta);
+
+
+        // --- Listeners para formatear/desformatear inputs (Precio Caja y Precio Costo) ---
+        [precioCajaInput, precioCostoInput].forEach(input => {
+            input.addEventListener('blur', function() {
+                const rawValue = parseFormattedNumber(this.value);
+                if (!isNaN(rawValue)) {
+                    this.value = formatInputNumber(rawValue);
+                } else {
+                    // Si no es válido al salir, limpiar (excepto si es costo y caja/cant son válidos)
+                    // Simplificación: limpiar si no es número válido
+                     if (input.id === 'precio_costo') {
+                         // Si es costo, recalcular venta por si acaso
+                         calcularPrecioVenta();
+                     } else {
+                         this.value = '';
+                     }
+                }
+            });
+
+            input.addEventListener('focus', function() {
+                const rawValue = parseFormattedNumber(this.value);
+                 if (!isNaN(rawValue)) {
+                     this.value = String(rawValue); // Mostrar número crudo
+                 }
+                // No limpiar si no es válido al enfocar, permitir corrección
+                this.select();
+            });
+        });
+
+
+        // --- Navegación con Enter (Actualizada) ---
+        porcentajeInput.addEventListener('keydown', (event) => handleEnterNavigation(event, 'precio_caja'));
+        precioCajaInput.addEventListener('keydown', (event) => handleEnterNavigation(event, 'cantidad'));
+        cantidadInput.addEventListener('keydown', (event) => handleEnterNavigation(event, 'precio_costo')); // Va a Precio Costo
+        precioCostoInput.addEventListener('keydown', (event) => handleEnterNavigation(event, 'add-button')); // Va a Agregar
+
+
+        // --- Limpiar Formulario (Actualizado) ---
+        clearButton.addEventListener('click', () => {
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => {
+                // No limpiar porcentaje, limpiar todos los demás (incluido costo)
+                if (input.id !== 'porcentaje') {
+                    input.value = '';
+                }
+            });
+            // Foco en precio_caja después de limpiar
+            const nextInput = document.getElementById('precio_caja');
+            if (nextInput) {
+                nextInput.focus();
+            }
+             // Recalcular venta (se limpiará porque los costos estarán vacíos)
+             calcularPrecioVenta();
+        });
+
+        // Enviar Formulario (simulado)
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            console.log('Formulario enviado (simulado)');
+            const formData = new FormData(form);
+            // Asegurarse de parsear los números formateados antes de enviar si es necesario
+            formData.set('precio_caja', parseFormattedNumber(precioCajaInput.value) || '');
+            formData.set('precio_costo', parseFormattedNumber(precioCostoInput.value) || '');
+            const data = Object.fromEntries(formData.entries());
+            console.log("Datos del formulario:", data);
+            alert('Funcionalidad "Agregar" no implementada. Mira la consola.');
+        });
+
+         // Calcular valores iniciales al cargar la página
+         window.addEventListener('load', () => {
+            // Calcular venta inicial basado en porcentaje predeterminado y costos (vac�os inicialmente)
+            calcularPrecioVenta();
+         });
+
+    </script>
+
+</body>
+</html>

@@ -98,6 +98,10 @@ session_start();
                 font-size: 22pt;
                 text-align: right;
             }
+            .footer-controls {
+                display: flex;
+                justify-content: space-between;
+            }
         }
     </style>
 </head>
@@ -111,7 +115,64 @@ session_start();
                 </div>
             </div>
 
-            <div class="row g-4 justify-content-center pt-3">
+            <!-- Fila de controles de búsqueda y acciones -->
+            <div class="row g-3 justify-content-center pt-3">
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
+                        <label for="busqueda_codigoprod" class="input-group-text label-naranja">cod prod</label>
+                        <input type="text" class="form-control" id="busqueda_codigoprod" name="busqueda_codigoprod">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group input-group-sm">
+                        <label for="busqueda_codbar" class="input-group-text label-naranja">codbar</label>
+                        <input type="text" class="form-control" id="busqueda_codbar" name="busqueda_codbar">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm">
+                        <label for="campo" class="input-group-text">Buscar:</label>
+                        <input type="text" name="campo" id="campo" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 justify-content-center pt-2">
+                <div class="col-auto">
+                    <button type="button" id="btn-limpiar" class="btn btn-secondary btn-sm">Limpiar</button>
+                    <button type="button" id="btn-imprimir" class="btn btn-info btn-sm">Imprimir</button>
+                    <button type="button" id="btn-etiquetas" class="btn btn-success btn-sm">Etiquetas</button>
+                    <button type="button" id="btn-reset-selecc" class="btn btn-warning btn-sm">Poner Selecc a Cero</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="window.open('http://192.168.1.152/costo_mercaderia.html', '_blank')">Costo Mercaderia</button>
+                    <button type="button" class="btn btn-dark btn-sm" onclick="window.open('http://192.168.1.152/costo_caramelo.html', '_blank')">Costo Caramelo</button>
+                </div>
+            </div>
+
+            <div class="row py-4">
+                <div class="col">
+                    <table class="table table-sm table-bordered table-striped">
+                        <thead>
+                            <th></th>
+                            <th class="sort asc">Cód. Prod.</th>
+                            <th class="sort asc">Nombre</th>
+                            <th class="sort asc">Precio 1</th>
+                            <th class="sort asc">Cód. Barra</th>
+                            <th id="filtro-selecc" style="cursor: pointer;">Selecc <span id="filtro-selecc-icono"></span></th>
+                            <th class="sort asc">Costo</th>
+                            <th class="sort asc">Cant. Caja</th>
+                            <th class="sort asc">Cód. Numérico</th>
+                            <th></th>
+                            <th></th>
+                        </thead>
+                        <tbody id="content"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row justify-content-between footer-controls">
+                <div class="col-auto">
+                    <label id="lbl-total"></label>
+                </div>
+                <div class="col-auto" id="nav-paginacion"></div>
                 <div class="col-auto">
                     <div class="row g-2">
                         <div class="col-auto">
@@ -130,68 +191,9 @@ session_start();
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-3">
-                    <div class="input-group input-group-sm">
-                        <label for="busqueda_codigoprod" class="input-group-text label-naranja">cod prod</label>
-                        <input type="text" class="form-control" id="busqueda_codigoprod" name="busqueda_codigoprod">
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="input-group input-group-sm">
-                        <label for="busqueda_codbar" class="input-group-text label-naranja">codbar</label>
-                        <input type="text" class="form-control" id="busqueda_codbar" name="busqueda_codbar">
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <div class="input-group input-group-sm">
-                        <label for="campo" class="input-group-text">Buscar:</label>
-                        <input type="text" name="campo" id="campo" class="form-control">
-                    </div>
-                </div>
-                <div class="col-auto">
-                    <button type="button" id="btn-limpiar" class="btn btn-secondary btn-sm">Limpiar</button>
-                </div>
-                <div class="col-auto">
-                    <button type="button" id="btn-imprimir" class="btn btn-info btn-sm">Imprimir</button>
-                </div>
-                <div class="col-auto">
-                    <button type="button" id="btn-etiquetas" class="btn btn-success btn-sm">Etiquetas</button>
-                </div>
-                <div class="col-auto">
-                    <button type="button" id="btn-reset-selecc" class="btn btn-warning btn-sm">Poner Selecc a Cero</button>
-                </div>
-            </div>
-
-            <div class="row py-4">
-                <div class="col">
-                    <table class="table table-sm table-bordered table-striped">
-                        <thead>
-                            <th></th>
-                            <th class="sort asc">Cód. Prod.</th>
-                            <th class="sort asc">Nombre</th>
-                            <th class="sort asc">Precio 1</th>
-                            <th class="sort asc">Cód. Barra</th>
-                            <th id="filtro-selecc" style="cursor: pointer;">Selecc <span id="filtro-selecc-icono"></span></th>
-                            <th class="sort asc">Costo</th>
-                            <th></th>
-                            <th></th>
-                        </thead>
-                        <tbody id="content"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="row justify-content-between">
-                <div class="col-12 col-md-4">
-                    <label id="lbl-total"></label>
-                </div>
-                <div class="col-12 col-md-4" id="nav-paginacion"></div>
                 <input type="hidden" id="pagina" value="1">
-                <input type="hidden" id="orderCol" value="0">
-                <input type="hidden" id="orderType" value="asc">
+                <input type="hidden" id="orderCol" value="2"> <!-- Columna 'nombre' -->
+                <input type="hidden" id="orderType" value="asc"> <!-- Orden ascendente -->
                 <input type="hidden" id="filtroSeleccActivo" value="0">
             </div>
 
@@ -230,8 +232,12 @@ session_start();
                             <label for="nuevo-costo" class="form-label">Costo</label>
                             <input type="number" step="any" class="form-control" id="nuevo-costo" name="costo">
                         </div>
+                        <div class="mb-3">
+                            <label for="nuevo-cantcaja" class="form-label">Cantidad por Caja</label>
+                            <input type="number" class="form-control" id="nuevo-cantcaja" name="CANTCAJA"d
+                            <label for="nuevo-codnumeri" class="form-label">Código Numérico</label>
+                            <input type="number" class="form-control" id="nuevo-codnumeri" name
                     </form>
-                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                     <button type="submit" class="btn btn-success" form="form-nuevo">Guardar</button>
@@ -270,6 +276,14 @@ session_start();
                         <div class="mb-3">
                             <label for="costo" class="form-label">Costo</label>
                             <input type="number" step="any" class="form-control" id="costo" name="costo">
+                        </div>
+                        <div class="mb-3">
+                            <label for="CANTCAJA" class="form-label">Cantidad por Caja</label>
+                            <input type="number" class="form-control" id="CANTCAJA" name="CANTCAJA">
+                        </div>
+                        <div class="mb-3">
+                            <label for="CODNUMERI" class="form-label">Código Numérico</label>
+                            <input type="number" class="form-control" id="CODNUMERI" name="CODNUMERI">
                         </div>
                     </form>
                 </div>
@@ -374,21 +388,14 @@ session_start();
             let elemento = e.target;
             let orderType;
 
-            // Caso especial para la columna 'Cód. Prod.' (índice 1)
-            if (elemento.cellIndex === 1) {
-                orderType = 'asc';
-                if (elemento.classList.contains("desc")) {
-                    elemento.classList.remove("desc");
-                }
-                if (!elemento.classList.contains("asc")) {
-                    elemento.classList.add("asc");
-                }
-            } else {
-                // Lógica de alternancia existente para las demás columnas
-                orderType = elemento.classList.contains("asc") ? "desc" : "asc";
-                elemento.classList.toggle("asc");
-                elemento.classList.toggle("desc");
-            }
+            // Limpiar clases de ordenación de todas las columnas
+            document.querySelectorAll(".sort").forEach(col => col.classList.remove("asc", "desc"));
+
+            // Lógica de alternancia para la dirección de ordenación
+            orderType = elemento.classList.contains("asc") ? "desc" : "asc";
+
+            // Aplica la clase de ordenación a la columna clickeada
+            elemento.classList.add(orderType);
 
             document.getElementById('orderCol').value = elemento.cellIndex;
             document.getElementById("orderType").value = orderType;
@@ -446,6 +453,8 @@ session_start();
             editaModal.querySelector('.modal-body #codbar').value = button.getAttribute('data-codbar');
             editaModal.querySelector('.modal-body #selecc').checked = button.getAttribute('data-selecc') == 1;
             editaModal.querySelector('.modal-body #costo').value = button.getAttribute('data-costo');
+            editaModal.querySelector('.modal-body #CANTCAJA').value = button.getAttribute('data-cantcaja');
+            editaModal.querySelector('.modal-body #CODNUMERI').value = button.getAttribute('data-codnumeri');
         });
 
         const eliminaModal = document.getElementById('eliminaModal');

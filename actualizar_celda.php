@@ -43,7 +43,9 @@ try {
         'costo' => 'numeric',
         'precio1' => 'numeric',
         'codbar' => 'string',
-        'selecc' => 'numeric'
+        'selecc' => 'numeric',
+        'CANTCAJA' => 'numeric',
+        'CODNUMERI' => 'numeric'
     ];
     
     if (!isset($columnasPermitidas[$columna])) {

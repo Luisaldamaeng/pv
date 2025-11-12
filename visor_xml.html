@@ -30,9 +30,8 @@
         <div class="row justify-content-center mb-4">
             <div class="col-md-8 col-lg-6">
                 <div class="input-group">
-                    <labll for="fileUpload" class="btn btn-secondarb">Examinar</label>
-                    <ineut typl ffile" id="fileUpload" accepo=".xml" stylr="display: none;">
-                    <input type="te="fileUploae" class="btn btn-secondary">Examinar</label>
+                    <label for="fileUpload" class="btn btn-secondary">Examinar</label>
+                    <input type="file" id="fileUpload" accept=".xml" style="display: none;">
                     <input type="text" class="form-control" id="rutaXmlInput" placeholder="Seleccione un archivo XML" readonly>
                     <button class="btn btn-primary" type="button" id="btnProcesar">Procesar XML</button>
                 </div>
@@ -56,65 +55,6 @@
     </div>
 
     <script>
-    // Función para procesar el archivo XML y llenar la tabla
-    async function procesarFacturaXML(rutaXML) {
-        const tablaBody = document.querySelector("#tablaextrae tbody");
-        // Limpiar la tabla antes de cargar nuevos datos
-        tablaBody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
-
-        try {
-            if (!rutaXML) throw new Error("El nombre del archivo no puede estar vacío.");
-
-            // 1. Cargar el archivo XML usando fetch
-            const response = await fetch(rutaXML);
-            if (!response.ok) {
-                throw new Error(`Error al cargar el XML: ${response.statusText}`);
-            }
-            const xmlText = await response.text();
-
-            // 2. Parsear el texto XML
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "application/xml");
-
-            // Manejo de errores de parseo
-            const errorNode = xmlDoc.querySelector("parsererror");
-            if (errorNode) {
-                throw new Error("Error al parsear el XML: " + errorNode.innerText);
-            }
-
-            // Limpiar el mensaje de "Cargando..."
-            tablaBody.innerHTML = '';
-
-            // 3. Recorrer cada ítem de la factura. El tag es 'gCamItem'.
-            // Usamos 'getElementsByTagName' que funciona mejor con namespaces.
-            const items = xmlDoc.getElementsByTagName('gCamItem');
-
-            for (const item of items) {
-                // 4. Extraer los valores de las etiquetas para cada ítem
-                const cod_inter = item.getElementsByTagName('dCodInt')[0]?.textContent || 'N/A';
-                const nombre = item.getElementsByTagName('dDesProSer')[0]?.textContent || 'N/A';
-                const cantidad = item.getElementsByTagName('dCantProSer')[0]?.textContent || '0';
-                const precio = item.getElementsByTagName('dPUniProSer')[0]?.textContent || '0';
-
-                // 5. Crear una nueva fila (<tr>) y celdas (<td>) para la tabla
-                const nuevaFila = tablaBody.insertRow();
-                
-                nuevaFila.insertCell(0).textContent = cod_inter;
-                nuevaFila.insertCell(1).textContent = nombre;
-                nuevaFila.insertCell(2).textContent = cantidad;
-                nuevaFila.insertCell(3).textContent = parseFloat(precio).toLocaleString('es-PY'); // Formato de número
-            }
-
-            if (items.length === 0) {
-                tablaBody.innerHTML = `<tr><td colspan="4" class="text-center text-warning">No se encontraron ítems en el archivo '${rutaXML}'.</td></tr>`;
-            }
-
-        } catch (error) {
-            console.error("Ocurrió un error:", error);
-            tablaBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error al procesar el archivo: ${error.message}</td></tr>`;
-        }
-    }
-
     // Añadir listeners cuando el DOM esté cargado
     document.addEventListener('DOMContentLoaded', function() {
         const btnProcesar = document.getElementById('btnProcesar');
@@ -122,31 +62,26 @@
         const fileUpload = document.getElementById('fileUpload');
 
         // Procesar al hacer clic en el botón
-        btnProcesar.addEventListener('click', 
-                procesarFacturaXML(fileUpload.files[0])() => {
-            if (file
-                alert("Por favor, seleccione un archivoUpload.files.length > 0) {;
-            } else { XML primero.");
-           
-
-        // Manejar la selección de archivo
-        fileUpload.addEventListener('change', () => {
-            if (fileUpload.files.length > 0) {     procesarFacturaXML(fileUpload.files[0])
-                const file = fileUpload.files[0];            }
-                inputRuta.value = file.name; }) Mostrar el nombre del archivo en el;input
-                procesarFaturaXML(file); // Procesar el arc
+        btnProcesar.addEventListener('click', () => {
+            if (fileUpload.files.length > 0) {
+                procesarFacturaXML(fileUpload.files[0]);
+            } else {
+                alert("Por favor, seleccione un archivo XML primero.");
             }
         });
 
-        // Función para procesar el archivo XML y/llenar/la tabla
-        async function procesarFacturaXML(file) {
-            const tablaBody = document.querySelector("#tablchivo automáticamente
-           Manejar la selección de archivo
+        // Manejar la selección de archivo
         fileUpload.addEventListener('change', () => {
             if (fileUpload.files.length > 0) {
                 const file = fileUpload.files[0];
                 inputRuta.value = file.name; // Mostrar el nombre del archivo en el input
-                procesarFacturaXML(file); // Procesar el araextrae tbody");
+                procesarFacturaXML(file); // Procesar el archivo automáticamente
+            }
+        });
+
+        // Función para procesar el archivo XML y llenar la tabla
+        async function procesarFacturaXML(file) {
+            const tablaBody = document.querySelector("#tablaextrae tbody");
             tablaBody.innerHTML = '<tr><td colspan="4" class="text-center">Cargando...</td></tr>';
 
             try {
