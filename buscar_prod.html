@@ -9,7 +9,7 @@
         label,input,button{font-size:16px}
         #result{margin-top:18px;border:1px solid #ddd;padding:12px;border-radius:6px}
         table{width:100%;border-collapse:collapse}
-        th,td{padding:8px;border:1px solid #eee;text-align:left}
+        th,td{padding:8px;border:1px solid #eee;text-align:left; font-size: 28px;}
         .muted{color:#666;font-size:14px}
     </style>
 </head>
@@ -30,6 +30,9 @@
         const result = document.getElementById('result');
         let searchTimeout;
 
+        function formatNumber(num) {
+            return new Intl.NumberFormat('es-PY').format(num);
+        }
         // Función para realizar la búsqueda
         const doSearch = async () => {
             const q = qInput.value.trim();
@@ -47,12 +50,16 @@
                 const json = await resp.json();
                 if (!json.success) {
                     result.innerHTML = `<p class="muted">${escapeHtml(json.message || 'No encontrado')}</p>`;
+                    qInput.select();
+                    qInput.focus();
                     return;
                 }
 
                 const rows = json.data;
                 if (rows.length === 0) {
                     result.innerHTML = '<p class="muted">No se encontraron productos.</p>';
+                    qInput.select();
+                    qInput.focus();
                     return;
                 }
 
@@ -65,7 +72,11 @@
                 for (const r of rows) {
                     html += '<tr>';
                     for (const k of keys) {
-                        html += `<td>${escapeHtml(String(r[k] ?? '')).replace(/\r?\n|\r/g, ' ')}</td>`;
+                        let value = r[k];
+                        if (k === 'precio1') {
+                            value = formatNumber(value);
+                        }
+                        html += `<td>${escapeHtml(String(value ?? '')).replace(/\r?\n|\r/g, ' ')}</td>`;
                     }
                     html += '</tr>';
                 }
@@ -74,13 +85,19 @@
 
             } catch (err) {
                 result.innerHTML = `<p class="muted">Error: ${escapeHtml(err.message)}</p>`;
+            } finally {
+                qInput.select();
+                qInput.focus();
             }
         };
 
         // Listener para el input de búsqueda (búsqueda incremental)
         qInput.addEventListener('input', () => {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(doSearch, 300); // Espera 300ms después de la última tecla para buscar
+            const q = qInput.value.trim();
+            // Si es puramente numérico, es un código (rápido). Si no, es un nombre (más lento).
+            const delay = /^\d+$/.test(q) ? 300 : 1000;
+            searchTimeout = setTimeout(doSearch, delay);
         });
 
         // Prevenir que el formulario se envíe con "Enter" y recargue la página

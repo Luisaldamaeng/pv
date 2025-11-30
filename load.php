@@ -58,10 +58,6 @@ if (isset($_POST['orderCol'])) {
     $orderType = isset($_POST['orderType']) ? $_POST['orderType'] : 'asc';
     if (in_array(strtolower($orderType), ['asc', 'desc']) && isset($columns[$orderCol])) {
         $columnaOrdenar = $columns[$orderCol];
-        // Si la columna es 'nombre', la ordenamos usando LOWER para que sea insensible a mayúsculas/minúsculas
-        if ($columnaOrdenar === 'nombre') {
-            $columnaOrdenar = "LOWER(nombre)";
-        }
         $sOrder = "ORDER BY " . $columnaOrdenar . ' ' . $orderType;
     }
 }
@@ -93,7 +89,18 @@ $output['paginacion'] = '';
 
 if ($num_rows > 0) {
     while ($row = $resultado->fetch_assoc()) {
-        $output['data'] .= '<tr>';
+        
+        // Mover todos los atributos de datos a la etiqueta <tr>
+        $tr_attributes = 'data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $tr_attributes .= 'data-nombre="' . htmlspecialchars($row['nombre'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $tr_attributes .= 'data-costo="' . htmlspecialchars($row['costo'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $tr_attributes .= 'data-precio1="' . htmlspecialchars($row['precio1'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $tr_attributes .= 'data-codbar="' . htmlspecialchars($row['codbar'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $tr_attributes .= 'data-cantcaja="' . htmlspecialchars($row['CANTCAJA'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $tr_attributes .= 'data-codnumeri="' . htmlspecialchars($row['CODNUMERI'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
+        $tr_attributes .= 'data-selecc="' . htmlspecialchars($row['selecc'] ?? '', ENT_QUOTES, 'UTF-8') . '"';
+
+        $output['data'] .= "<tr $tr_attributes>";
         $output['data'] .= '<td class="puntero-celda"></td>';
         $output['data'] .= '<td>' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         $output['data'] .= '<td contenteditable="true" data-col="nombre" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['nombre'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
@@ -105,18 +112,8 @@ if ($num_rows > 0) {
         $output['data'] .= '<td contenteditable="true" data-col="CANTCAJA" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['CANTCAJA'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         $output['data'] .= '<td contenteditable="true" data-col="CODNUMERI" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['CODNUMERI'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         
-        $editButton = '<a class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editaModal" ';
-        $editButton .= 'data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
-        $editButton .= 'data-nombre="' . htmlspecialchars($row['nombre'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
-        $editButton .= 'data-costo="' . htmlspecialchars($row['costo'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
-        $editButton .= 'data-precio1="' . htmlspecialchars($row['precio1'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
-        $editButton .= 'data-codbar="' . htmlspecialchars($row['codbar'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
-        $editButton .= 'data-cantcaja="' . htmlspecialchars($row['CANTCAJA'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
-        $editButton .= 'data-codnumeri="' . htmlspecialchars($row['CODNUMERI'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
-        $editButton .= 'data-selecc="' . htmlspecialchars($row['selecc'] ?? '', ENT_QUOTES, 'UTF-8') . '">Editar</a>';
+        // Se eliminan los botones de editar y eliminar de la fila.
 
-        $output['data'] .= '<td>' . $editButton . '</td>';
-        $output['data'] .= '<td><a class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#eliminaModal" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">Eliminar</a></td>';
         $output['data'] .= '</tr>';
     }
 } else {

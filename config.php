@@ -14,7 +14,11 @@ $conn = new mysqli("127.0.0.1", "root", "", "pv");
 
 // Comprobando si hay un error de conexión.
 if ($conn->connect_error) {
-    echo 'Error de conexion ' . $conn->connect_error;
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Error de conexión: ' . $conn->connect_error
+    ]);
     exit;
 }
 

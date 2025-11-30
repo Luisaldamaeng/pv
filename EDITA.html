@@ -1,0 +1,48 @@
+ <!-- Modal Edita -->
+    <div class="modal fade" id="editaModal" tabindex="-1" aria-labelledby="editaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-custom">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editaModalLabel">Editar Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-edita">
+                        <input type="hidden" id="id" name="id">
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required x-webkit-speech speech>
+                        </div>
+                        <div class="mb-3">
+                            <label for="precio1" class="form-label">Precio 1</label>
+                            <input type="number" step="any" class="form-control" id="precio1" name="precio1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codbar" class="form-label">Código de Barra</label>
+                            <input type="text" class="form-control" id="codbar" name="codbar" x-webkit-speech speech>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="selecc" name="selecc">
+                            <label for="selecc" class="form-check-label">Seleccionado</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="costo" class="form-label">Costo</label>
+                            <input type="number" step="any" class="form-control" id="costo" name="costo">
+                        </div>
+                        <div class="mb-3">
+                            <label for="CANTCAJA" class="form-label">Cantidad por Caja</label>
+                            <input type="number" class="form-control" id="CANTCAJA" name="CANTCAJA">
+                        </div>
+                        <div class="mb-3">
+                            <label for="CODNUMERI" class="form-label">Código Numérico</label>
+                            <input type="number" class="form-control" id="CODNUMERI" name="CODNUMERI">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary" form="form-edita">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>

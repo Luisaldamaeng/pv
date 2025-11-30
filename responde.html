@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>Saludo</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input { padding: 6px; font-size: 14px; }
+        button { padding: 6px 10px; font-size: 14px; margin-left: 6px; }
+        #saludo { margin-top: 12px; font-weight: bold; }
+    </style>
+</head> 
+<body>
+ 
+<!-- 
+    <script>
+       
+        const nombreInput = document.getElementById('nombre');
+        const btn = document.getElementById('btn');
+        const salida = document.getElementById('saludo');
+
+        function saludar() {
+            const nombre = nombreInput.value.trim();
+            if (!nombre) {
+                salida.textContent = 'Ingresa un nombre.';
+                return;
+            }
+            salida.textContent = `¡Qué tal, ${nombre}!`;
+        }
+
+        btn.addEventListener('click', saludar);
+        nombreInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saludar(); });
+       
+    </script>
+    -->
+     <script>
+         document.getElementById('form-edita').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let formaData = new FormData(this);
+            fetch('actualizar.php', {
+                method: 'POST',
+                body: formaData
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') {
+                    bootstrap.Modal.getInstance(editaModal).hide();
+                    getData();
+                }
+            }).catch(err => console.log(err));
+        })
+
+     </script>
+  
+
+</body>
+</html>

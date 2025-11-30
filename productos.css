@@ -1,0 +1,86 @@
+body {
+    background-color: #add8e6;
+}
+
+.modal-custom .modal-content {
+    background-color: #ffffe0;
+}
+
+.modal-custom .modal-body,
+.modal-custom .modal-title {
+    color: red;
+}
+
+.modal-custom .form-control {
+    border: 1px solid #000;
+}
+
+.modal-custom label {
+    color: red;
+}
+
+/* Asegura que los modales estén siempre por encima de su backdrop */
+.modal {
+    z-index: 1051 !important;
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;
+}
+
+.puntero-celda {
+    width: 20px;
+    font-weight: bold;
+    color: red;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.label-naranja {
+    background-color: orange;
+    color: black;
+    font-weight: bold;
+    border-color: orange;
+}
+
+.footer-controls {
+    display: flex;
+    justify-content: space-between;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #print-area, #print-area * {
+        visibility: visible;
+    }
+    #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    /* Estilos para Impresión de Tabla */
+    #print-area .table .btn,
+    #print-area .puntero-celda,
+    #print-area thead th:first-child {
+        display: none;
+    }
+
+    /* Estilos para Impresión de Etiquetas */
+    #print-area .label-print-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        width: 100%;
+    }
+    #print-area .label-item {
+        border: 1px solid #000;
+        padding: 10px;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        page-break-inside: avoid;
+    }
+}

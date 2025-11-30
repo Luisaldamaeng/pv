@@ -1,22 +1,35 @@
 <?php
 
+function responderJSON($status, $message = '') {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'status' => $status,
+        'message' => $message
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 require 'config.php';
 
-$id = $_POST['id'];
+$id = $_POST['id'] ?? null;
+
+if (!$id) {
+    responderJSON('error', 'No se proporcionó un ID para eliminar.');
+}
 
 $sql = "DELETE FROM producto WHERE codigoprod = ?";
 
 $stmt = $conn->prepare($sql);
 if ($stmt === false) {
-    die(json_encode(['status' => 'error', 'message' => 'Error al preparar la consulta: ' . $conn->error]));
+    responderJSON('error', 'Error al preparar la consulta: ' . $conn->error);
 }
 
 $stmt->bind_param('s', $id);
 
 if ($stmt->execute()) {
-    echo json_encode(['status' => 'success']);
+    responderJSON('success', 'Producto eliminado correctamente.');
 } else {
-    echo json_encode(['status' => 'error', 'message' => $stmt->error]);
+    responderJSON('error', 'Error al ejecutar la eliminación: ' . $stmt->error);
 }
 
 $conn->close();
