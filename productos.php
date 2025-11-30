@@ -139,6 +139,7 @@ session_start();
             <div class="row g-2 justify-content-center pt-2">
                 <div class="col-auto">
                     <button type="button" id="btn-limpiar" class="btn btn-secondary btn-sm">Limpiar</button>
+                    <button type="button" id="btn-duplicar" class="btn btn-info btn-sm">Duplicar</button>
                     <button type="button" id="btn-imprimir" class="btn btn-info btn-sm">Imprimir</button>
                     <button type="button" id="btn-etiquetas" class="btn btn-success btn-sm">Etiquetas</button>
                     <button type="button" id="btn-reset-selecc" class="btn btn-warning btn-sm">Poner Selecc a Cero</button>
