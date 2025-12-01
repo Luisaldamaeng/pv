@@ -9,6 +9,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const lblTotal = document.getElementById("lbl-total");
     const navPaginacion = document.getElementById("nav-paginacion");
 
+    // Estado: fila actualmente seleccionada (puntero)
+    let selectedRow = null;
+
     // Botones
     const btnLimpiar = document.getElementById("btn-limpiar");
     const btnDuplicar = document.getElementById("btn-duplicar");
@@ -88,6 +91,9 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         })
         .catch(err => console.error('Error al cargar los datos:', err));
+
+        // NOTIFICA que la tabla fue actualizada (permite acciones posteriores como seleccionar una fila)
+        document.dispatchEvent(new CustomEvent('productos:tableUpdated'));
     }
 
     // --- FUNCIONES DE LA TABLA (PAGINACIÓN, ORDEN, PUNTERO) ---
@@ -157,15 +163,13 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     btnDuplicar.addEventListener("click", function() {
-        const pointerCell = Array.from(document.querySelectorAll('.puntero-celda')).find(cell => cell.innerText.includes('➤'));
-        const selectedRow = pointerCell ? pointerCell.closest('tr') : null;
-        
+
         if (!selectedRow || selectedRow.querySelector('td[colspan]')) {
             mostrarAlerta("Por favor, seleccione un producto de la tabla para duplicar.");
             return;
         }
 
-        // Extracción defensiva de celdas y normalización de números (formato "1.234,56" -> "1234.56")
+        // Extracción defensiva de celdas y normalización de números
         const nombre = selectedRow.cells[2]?.textContent?.trim() || '';
         const precioRaw = selectedRow.cells[3]?.textContent?.trim() || '';
         const precio1 = precioRaw ? precioRaw.replace(/\./g, '').replace(',', '.') : '';
@@ -173,7 +177,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const costoRaw = selectedRow.cells[6]?.textContent?.trim() || '';
         const costo = costoRaw ? costoRaw.replace(/\./g, '').replace(',', '.') : '';
         const cantcaja = selectedRow.cells[7]?.textContent?.trim() || '';
-        const codnumeri = selectedRow.cells[8]?.textContent?.trim() || '';
+        const codnumeri = selectedRow.cells[8?.textContent?.trim() || '';
+
+        // Genero un código temporal único que será insertado como codigoprod al duplicar
+        const codigoprod_temp = 'TMP_' + Date.now();
 
         let formaData = new FormData();
         formaData.append('nombre', nombre);
@@ -183,19 +190,76 @@ document.addEventListener("DOMContentLoaded", function() {
         formaData.append('CANTCAJA', cantcaja);
         formaData.append('CODNUMERI', codnumeri);
         formaData.append('selecc', 0);
-        formaData.append('codigoprod_temp', 'TEMP_' + Math.floor(Date.now() / 1000));
+        formaData.append('codigoprod_temp', codigoprod_temp);
 
+        // Función auxiliar para seleccionar la fila por código de producto
+        function seleccionarFilaPorCodigo(codigo) {
+            const filas = contentTbody.querySelectorAll('tr');
+            // Quitar puntero previo
+            filas.forEach(f => {
+                const primeraCelda = f.querySelector('td');
+                if (primeraCelda) primeraCelda.innerHTML = '';
+                f.classList.remove('table-active');
+            });
+
+            for (const fila of filas) {
+                const cellCode = fila.cells[1]?.textContent?.trim();
+                if (cellCode === codigo) {
+                    // marcar visualmente
+                    fila.classList.add('table-active');
+                    const primera = fila.querySelector('td');
+                    if (primera) primera.innerHTML = '<span class="puntero-celda">▶</span>';
+                    // setear selectedRow global para otras acciones
+                    selectedRow = fila;
+                    // asegurar visibilidad
+                    fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // opcional: poner foco en el primer botón dentro de la fila (si existe)
+                    const boton = fila.querySelector('button, a, input');
+                    if (boton) boton.focus();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Enviar la duplicación
         fetch('crear_registro.php', {
             method: 'POST',
             body: formaData
-        }).then(response => response.json()).then(data => {
+        })
+        .then(response => {
+            if (!response.ok) return response.text().then(t => { throw new Error('HTTP ' + response.status + ' - ' + t); });
+            return response.json();
+        })
+        .then(data => {
             if (data.status === 'success') {
-                mostrarAlerta(data.message || 'Producto duplicado con éxito.');
+                // Una vez que se recargue la tabla debemos buscar la fila con codigoprod_temp y seleccionarla
+                // Listener one-shot para cuando getData() termine
+                const onUpdated = () => {
+                    // intentar seleccionar; si no se encuentra, no hacer nada
+                    seleccionarFilaPorCodigo(codigoprod_temp);
+                    document.removeEventListener('productos:tableUpdated', onUpdated);
+                };
+                document.addEventListener('productos:tableUpdated', onUpdated);
+
+                // Fallback por si getData no despacha el evento: intentar selección después de 500ms tras recarga
+                // (llamamos getData para refrescar)
                 getData();
+                setTimeout(() => {
+                    seleccionarFilaPorCodigo(codigoprod_temp);
+                    document.removeEventListener('productos:tableUpdated', onUpdated);
+                }, 700);
+
+                mostrarAlerta(data.message || 'Producto duplicado con éxito.');
             } else {
                 mostrarAlerta(data.message || 'Error al duplicar el producto.');
             }
-        }).catch(err => mostrarAlerta('Error de conexión al duplicar el producto.'));
+        })
+        .catch(err => {
+            console.error('Error al duplicar:', err);
+            mostrarAlerta('Error de conexión al duplicar el producto. ' + (err.message || ''));
+        });
+
     });
 
     btnResetSelecc.addEventListener("click", function() {
@@ -379,7 +443,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         body: formData
                     })
                     .then(response => response.json())
-                    .then(data => {
+                    .then data => {
                         mostrarAlerta(data.message || (data.status === 'success' ? 'Producto eliminado.' : 'Error al eliminar.'));
                         if (data.status === 'success') {
                             getData();
