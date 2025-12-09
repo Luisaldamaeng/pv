@@ -177,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const costoRaw = selectedRow.cells[6]?.textContent?.trim() || '';
         const costo = costoRaw ? costoRaw.replace(/\./g, '').replace(',', '.') : '';
         const cantcaja = selectedRow.cells[7]?.textContent?.trim() || '';
-        const codnumeri = selectedRow.cells[8?.textContent?.trim() || '';
+        const codnumeri = selectedRow.cells[8]?.textContent?.trim() || '';
 
         // Genero un código temporal único que será insertado como codigoprod al duplicar
         const codigoprod_temp = 'TMP_' + Date.now();
@@ -233,17 +233,12 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(data => {
             if (data.status === 'success') {
-                // Una vez que se recargue la tabla debemos buscar la fila con codigoprod_temp y seleccionarla
-                // Listener one-shot para cuando getData() termine
                 const onUpdated = () => {
-                    // intentar seleccionar; si no se encuentra, no hacer nada
                     seleccionarFilaPorCodigo(codigoprod_temp);
                     document.removeEventListener('productos:tableUpdated', onUpdated);
                 };
                 document.addEventListener('productos:tableUpdated', onUpdated);
 
-                // Fallback por si getData no despacha el evento: intentar selección después de 500ms tras recarga
-                // (llamamos getData para refrescar)
                 getData();
                 setTimeout(() => {
                     seleccionarFilaPorCodigo(codigoprod_temp);
@@ -428,11 +423,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (e.key === 'Delete' && !isEditing) {
             const pointerCell = document.querySelector('.puntero-celda:not(:empty)');
-            const selectedRow = pointerCell ? pointerCell.closest('tr') : null;
+            const selectedRowKey = pointerCell ? pointerCell.closest('tr') : null;
 
-            if (selectedRow) {
-                const id = selectedRow.cells[1].textContent;
-                const nombre = selectedRow.cells[2].textContent;
+            if (selectedRowKey) {
+                const id = selectedRowKey.cells[1].textContent;
+                const nombre = selectedRowKey.cells[2].textContent;
                 
                 mostrarConfirmacion(`¿Seguro que desea eliminar el producto "${nombre}" (ID: ${id})?`, () => {
                     let formData = new FormData();
@@ -443,7 +438,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         body: formData
                     })
                     .then(response => response.json())
-                    .then data => {
+                    .then(data => {
                         mostrarAlerta(data.message || (data.status === 'success' ? 'Producto eliminado.' : 'Error al eliminar.'));
                         if (data.status === 'success') {
                             getData();
@@ -561,5 +556,11 @@ document.addEventListener("DOMContentLoaded", function() {
         column.addEventListener("click", ordenar);
     });
 
-    getData();
+    // Llamada inicial para cargar datos y ayuda a depurar
+    if (typeof getData === 'function') {
+        console.log('Invocando getData() para cargar tabla');
+        getData();
+    } else {
+        console.error('getData() no está definida. Revisa productos.js');
+    }
 });

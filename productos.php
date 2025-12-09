@@ -158,16 +158,17 @@ session_start();
                     <div class="table-responsive">
                     <table class="table table-sm table-bordered table-striped">
                         <thead>
+                           <tr>
                             <th></th>
                             <th class="sort asc">Cód. Prod.</th>
                             <th class="sort asc">Nombre</th>
                             <th class="sort asc">Precio 1</th>
                             <th class="sort asc">Cód. Barra</th>
-                                <th id="filtro-selecc" style="cursor: pointer;">Selecc <span
-                                        id="filtro-selecc-icono"></span></th>
+                            <th id="filtro-selecc" style="cursor: pointer;">Selecc <span id="filtro-selecc-icono"></span></th>
                             <th class="sort asc">Costo</th>
                             <th class="sort asc">Cant. Caja</th>
                             <th class="sort asc">Cód. Numérico</th>
+                           </tr>
                         </thead>
                         <tbody id="content"></tbody>
                     </table>

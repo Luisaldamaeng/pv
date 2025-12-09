@@ -1,1 +1,7 @@
-{}
+{ 
+  "tools": {
+    "shell": {
+      "enableInteractiveShell": true
+    }
+  }
+}
