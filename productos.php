@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 ?>
 <!DOCTYPE html>
@@ -44,6 +46,58 @@ session_start();
             font-weight: bold;
             border-color: orange;
         }
+
+        /* --- Estilos para tabla con encabezado fijo y cuerpo scrollable --- */
+        .table-responsive {
+            overflow-y: visible; /* Permitir que .table-body-scroll maneje el scroll vertical */
+        }
+        .table-body-scroll {
+            max-height: 400px; /* Altura máxima antes de que aparezca el scroll */
+            overflow-y: auto; /* Habilitar scroll vertical */
+            border-bottom: 1px solid #dee2e6; /* Borde inferior para separar visualmente */
+        }
+        .table-responsive table {
+            margin-bottom: 0 !important; /* Eliminar margen inferior de la tabla */
+            width: 100%;
+            table-layout: fixed; /* Asegurar anchos de columna consistentes */
+        }
+        .table-responsive thead, .table-responsive tbody {
+            display: table; /* Cambiado a table para mejor alineación */
+            width: 100%;
+            table-layout: fixed;
+        }
+        .table-responsive thead tr {
+            position: sticky; /* Fija el encabezado */
+            top: 0;
+            background-color: #f8f9fa; /* Fondo para el encabezado fijo */
+            z-index: 1;
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); /* Sombra para resaltar */
+        }
+        .table-responsive th, .table-responsive td {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0.75rem; /* Ajustar padding si es necesario */
+            vertical-align: middle;
+            border-top: 1px solid #dee2e6;
+            border-left: 1px solid #dee2e6; /* Añadir borde izquierdo */
+            border-right: 1px solid #dee2e6; /* Añadir borde derecho */
+        }
+        .table-responsive th:first-child, .table-responsive td:first-child { border-left: none; }
+        .table-responsive th:last-child, .table-responsive tbody tr td:last-child { border-right: none; }
+        
+        /* Anchos específicos para cada columna (ajustar según el contenido) */
+        .table-responsive th:nth-child(1), .table-responsive tbody td:nth-child(1) { width: 30px; } /* Puntero */
+        .table-responsive th:nth-child(2), .table-responsive tbody td:nth-child(2) { width: 60px; } /* Foto */
+        .table-responsive th:nth-child(3), .table-responsive tbody td:nth-child(3) { width: 100px; } /* Cód. Prod. */
+        .table-responsive th:nth-child(4), .table-responsive tbody td:nth-child(4) { width: 250px; } /* Nombre */
+        .table-responsive th:nth-child(5), .table-responsive tbody td:nth-child(5) { width: 100px; } /* Precio 1 */
+        .table-responsive th:nth-child(6), .table-responsive tbody td:nth-child(6) { width: 120px; } /* Cód. Barra */
+        .table-responsive th:nth-child(7), .table-responsive tbody td:nth-child(7) { width: 80px; } /* Selecc */
+        .table-responsive th:nth-child(8), .table-responsive tbody td:nth-child(8) { width: 100px; } /* Costo */
+        .table-responsive th:nth-child(9), .table-responsive tbody td:nth-child(9) { width: 100px; } /* Cant. Caja */
+        .table-responsive th:nth-child(10), .table-responsive tbody td:nth-child(10) { width: 150px; } /* Ruta Foto */
+        /* Fin de anchos específicos */
 
         @media print {
             body * {
@@ -160,6 +214,7 @@ session_start();
                         <thead>
                            <tr>
                             <th></th>
+                            <th class="sort asc">Foto</th>
                             <th class="sort asc">Cód. Prod.</th>
                             <th class="sort asc">Nombre</th>
                             <th class="sort asc">Precio 1</th>
@@ -167,14 +222,18 @@ session_start();
                             <th id="filtro-selecc" style="cursor: pointer;">Selecc <span id="filtro-selecc-icono"></span></th>
                             <th class="sort asc">Costo</th>
                             <th class="sort asc">Cant. Caja</th>
-                            <th class="sort asc">Cód. Numérico</th>
+                            <th class="sort asc">Ruta Foto</th>
                            </tr>
                         </thead>
-                        <tbody id="content"></tbody>
+                        <div class="table-body-scroll">
+                            <tbody id="content"></tbody>
+                        </div>
                     </table>
                     </div>
                 </div>
             </div>
+
+
 
             <div class="row justify-content-between footer-controls">
                 <div class="col-auto">
@@ -207,6 +266,28 @@ session_start();
             
         </div>
     </main>
+
+    <!-- Modal de la Cámara -->
+    <div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true" data-bs-focus="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cameraModalLabel">Tomar Foto del Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <video id="camera-stream" width="100%" height="auto" autoplay playsinline style="display: none;"></video>
+                    <canvas id="camera-canvas" style="display: none;"></canvas>
+                     <div id="camera-placeholder">Presiona "Abrir Cámara" para iniciar.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btn-close-camera">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="btn-open-camera">Abrir Cámara</button>
+                    <button type="button" class="btn btn-success" id="btn-take-photo" disabled>Tomar Foto</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal Edita -->
     <div class="modal fade" id="editaModal" tabindex="-1" aria-labelledby="editaModalLabel" aria-hidden="true">
@@ -350,10 +431,13 @@ session_start();
             </div>
                     </div>
 
+
     <div id="print-area"></div>
+        <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <script src="productos.js" defer></script>
+        <script src="camara.js"></script>
 </body>
 
 </html>

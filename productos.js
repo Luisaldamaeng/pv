@@ -28,6 +28,14 @@ document.addEventListener("DOMContentLoaded", function() {
     const editaModal = editaModalEl ? new bootstrap.Modal(editaModalEl) : null;
     const nuevoModal = nuevoModalEl ? new bootstrap.Modal(nuevoModalEl) : null;
 
+    // Asegurarse de que el foco se reinicie al cerrar los modales para evitar problemas de accesibilidad
+    const alertaModalElement = document.getElementById('alertaModal');
+    if (alertaModalElement) {
+        alertaModalElement.addEventListener('hidden.bs.modal', function () {
+            document.body.focus();
+        });
+    }
+
     // Formularios
     const formEdita = document.getElementById('form-edita');
     const formNuevo = document.getElementById('form-nuevo');
@@ -77,10 +85,23 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
+            // Si el servidor devolvió un error estructurado
+            if (data && data.status && data.status === 'error') {
+                console.error('load.php error:', data.detail || data.message || data);
+                mostrarAlerta('Error al cargar datos: ' + (data.detail || data.message || 'Error interno'));
+                return;
+            }
+
+            if (!data || typeof data.data !== 'string') {
+                console.error('Respuesta inesperada de load.php:', data);
+                mostrarAlerta('Respuesta inesperada del servidor al cargar datos. Revisa la consola.');
+                return;
+            }
+
             contentTbody.innerHTML = data.data;
             lblTotal.innerHTML = `Mostrando ${data.totalFiltro} de ${data.totalRegistros} registros`;
             navPaginacion.innerHTML = data.paginacion;
-            
+
             if (data.data.includes('Sin resultados') && parseInt(paginaInput.value) !== 1) {
                 nextPage(1);
             } else {
@@ -90,7 +111,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
         })
-        .catch(err => console.error('Error al cargar los datos:', err));
+        .catch(err => {
+            console.error('Error al cargar los datos:', err);
+            mostrarAlerta('Error de conexión al cargar datos. Revisa la consola para más detalles.');
+        });
 
         // NOTIFICA que la tabla fue actualizada (permite acciones posteriores como seleccionar una fila)
         document.dispatchEvent(new CustomEvent('productos:tableUpdated'));
@@ -124,6 +148,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function clearPointer() {
         document.querySelectorAll('#content .puntero-celda').forEach(cell => cell.innerHTML = '');
+        document.querySelectorAll('#content tr').forEach(r => r.classList.remove('table-active'));
+        selectedRow = null;
+        
+
     }
 
     function setPointer(row) {
@@ -315,6 +343,10 @@ document.addEventListener("DOMContentLoaded", function() {
         const clickedRow = event.target.closest('tr');
         if (clickedRow && !clickedRow.querySelector('td[colspan]')) {
             setPointer(clickedRow);
+            
+            // Actualizar el preview de la foto
+            // El código relacionado con la vista previa de la foto se ha eliminado.
+
         }
     });
 

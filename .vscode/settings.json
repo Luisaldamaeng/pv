@@ -3,5 +3,6 @@
     "shell": {
       "enableInteractiveShell": true
     }
-  }
+  },
+  "github.copilot.nextEditSuggestions.enabled": true
 }

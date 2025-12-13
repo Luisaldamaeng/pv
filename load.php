@@ -1,8 +1,17 @@
 <?php
 
-require 'config.php';
+// Asegurar que la salida sea JSON y evitar que PHP emita HTML de errores
+header('Content-Type: application/json; charset=utf-8');
+ini_set('display_errors', 0);
+// Convertir warnings/notices en excepciones para capturarlas y devolver JSON
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+});
 
-$columns = ['codigoprod', 'nombre', 'precio1', 'codbar', 'selecc', 'costo', 'CANTCAJA', 'CODNUMERI'];
+try {
+    require 'config.php';
+
+$columns = ['codigoprod', 'nombre', 'precio1', 'codbar', 'selecc', 'costo', 'CANTCAJA', 'foto'];
 $table = "producto";
 $id = 'codigoprod';
 
@@ -64,20 +73,40 @@ if (isset($_POST['orderCol'])) {
 
 $sql = "SELECT " . implode(", ", $columns) . " FROM $table $where $sOrder $sLimit";
 $stmt = $conn->prepare($sql);
-if (!empty($params)) {
-    $stmt->bind_param($types, ...$params);
+$stmt = $conn->prepare($sql);
+if ($stmt === false) {
+    throw new Exception('Error al preparar la consulta: ' . $conn->error . ' SQL: ' . $sql);
 }
-$stmt->execute();
+if (!empty($params)) {
+    if (!$stmt->bind_param($types, ...$params)) {
+        throw new Exception('Error al bind_param: ' . $stmt->error);
+    }
+}
+if (!$stmt->execute()) {
+    throw new Exception('Error al ejecutar la consulta: ' . $stmt->error);
+}
 $resultado = $stmt->get_result();
 $num_rows = $resultado->num_rows;
 
 $sqlFiltro = "SELECT COUNT($id) AS total FROM $table $where";
+// Preparar y ejecutar consulta para el total filtrado
 $stmtFiltro = $conn->prepare($sqlFiltro);
-if ($stmtFiltro && !empty($params)) {
-    $stmtFiltro->bind_param($types, ...$params);
+if ($stmtFiltro === false) {
+    throw new Exception('Error al preparar la consulta de filtro: ' . $conn->error . ' SQL: ' . $sqlFiltro);
 }
-$stmtFiltro->execute();
-$totalFiltro = $stmtFiltro->get_result()->fetch_assoc()['total'];
+if (!empty($params)) {
+    if (!$stmtFiltro->bind_param($types, ...$params)) {
+        throw new Exception('Error al bind_param en filtro: ' . $stmtFiltro->error);
+    }
+}
+if (!$stmtFiltro->execute()) {
+    throw new Exception('Error al ejecutar la consulta de filtro: ' . $stmtFiltro->error);
+}
+$resFiltro = $stmtFiltro->get_result();
+if ($resFiltro === false) {
+    throw new Exception('Error al obtener resultado del filtro: ' . $stmtFiltro->error);
+}
+$totalFiltro = $resFiltro->fetch_assoc()['total'];
 
 $totalRegistros = $conn->query("SELECT count($id) FROM $table")->fetch_row()[0];
 
@@ -97,11 +126,17 @@ if ($num_rows > 0) {
         $tr_attributes .= 'data-precio1="' . htmlspecialchars($row['precio1'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
         $tr_attributes .= 'data-codbar="' . htmlspecialchars($row['codbar'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
         $tr_attributes .= 'data-cantcaja="' . htmlspecialchars($row['CANTCAJA'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
-        $tr_attributes .= 'data-codnumeri="' . htmlspecialchars($row['CODNUMERI'] ?? '', ENT_QUOTES, 'UTF-8') . '" ';
         $tr_attributes .= 'data-selecc="' . htmlspecialchars($row['selecc'] ?? '', ENT_QUOTES, 'UTF-8') . '"';
 
         $output['data'] .= "<tr $tr_attributes>";
         $output['data'] .= '<td class="puntero-celda"></td>';
+
+        // Columna Foto: solo botón con icono 📸
+        $output['data'] .= '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-primary camera-btn" data-codigo="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '" data-nombre="' . htmlspecialchars($row['nombre'] ?? '', ENT_QUOTES, 'UTF-8') . '" data-foto="' . htmlspecialchars($row['foto'] ?? '', ENT_QUOTES, 'UTF-8') . '">📸</button></td>';
+        
+        // Almacenar la foto en un atributo data- para mostrarla en el preview
+        $tr_attributes_foto = 'data-foto="' . htmlspecialchars($row['foto'] ?? '', ENT_QUOTES, 'UTF-8') . '"';
+        
         $output['data'] .= '<td>' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         $output['data'] .= '<td contenteditable="true" data-col="nombre" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['nombre'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         $output['data'] .= '<td contenteditable="true" data-col="precio1" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . number_format($row['precio1'] ?? 0, 0, ',', '.') . '</td>';
@@ -110,7 +145,7 @@ if ($num_rows > 0) {
         $output['data'] .= '<td class="text-center"><input type="checkbox" class="form-check-input selecc-checkbox" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '" ' . $checked . '></td>';
         $output['data'] .= '<td contenteditable="true" data-col="costo" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . number_format((float)($row['costo'] ?? 0), 0, ',', '.') . '</td>';
         $output['data'] .= '<td contenteditable="true" data-col="CANTCAJA" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['CANTCAJA'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
-        $output['data'] .= '<td contenteditable="true" data-col="CODNUMERI" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['CODNUMERI'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
+        $output['data'] .= '<td data-col="foto" data-id="' . htmlspecialchars($row['codigoprod'] ?? '', ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($row['foto'] ?? '', ENT_QUOTES, 'UTF-8') . '</td>';
         
         // Se eliminan los botones de editar y eliminar de la fila.
 
@@ -164,5 +199,18 @@ if ($totalFiltro > 0) {
 }
 
 echo json_encode($output, JSON_UNESCAPED_UNICODE);
+
+} catch (Throwable $e) {
+    http_response_code(500);
+    $resp = [
+        'status' => 'error',
+        'message' => 'Error interno al cargar datos',
+        'detail' => $e->getMessage()
+    ];
+    echo json_encode($resp, JSON_UNESCAPED_UNICODE);
+}
+
+// Restaurar manejador de errores por si se reutiliza el script
+restore_error_handler();
 
 ?>

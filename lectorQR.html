@@ -9,7 +9,8 @@
         body { font-family: Arial, sans-serif; margin: 1rem; background:#f7f7f7; }
         #video { width:100%; max-width:600px; border:1px solid #ccc; background:#000; }
         #controls { margin-top:.5rem; }
-        #output { margin-top:1rem; padding:.5rem; background:#fff; border:1px solid #ddd; max-width:600px; word-break:break-all; }
+        #output { margin-top:1rem; padding:.5rem; background:#fff; border:1px solid #ddd; max-width:600px; word-break:break-all; transition: background-color 0.3s; }
+        #output.success { background-color: #d4edda; }
         #canvas { display:none; }
         button,input[type=file] { margin-right:.5rem; }
     </style>
@@ -46,6 +47,7 @@
         let stream = null;
         let scanning = false;
         let rafId = null;
+        let audioCtx; // Para el sonido de "bip"
 
         async function startCamera() {
             // Comprobar si el navegador soporta la API
@@ -55,16 +57,22 @@
             }
 
             try {
-                // Al solicitar video sin especificar 'facingMode', el navegador
-                // permitirá al usuario elegir la cámara si hay varias disponibles.
-                const constraints = { video: true };
+                // Preferir la cámara trasera (environment). Si falla, intentará con cualquier otra.
+                const constraints = { video: { facingMode: 'environment' } };
                 resultEl.textContent = 'Solicitando acceso a la cámara...';
                 stream = await navigator.mediaDevices.getUserMedia(constraints);
             } catch (err) {
-                // Manejar errores comunes como que el usuario niegue el permiso.
-                console.error("Fallo al solicitar la cámara:", err);
-                resultEl.textContent = `Error al acceder a la cámara: ${err.name}. Asegúrate de dar permiso y usar localhost o HTTPS.`;
-                return;
+                console.warn("Fallo al solicitar cámara trasera, intentando con cualquier cámara:", err);
+                try {
+                    // Si falla la cámara trasera, intentar con cualquier cámara disponible
+                    const fallbackConstraints = { video: true };
+                    stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+                } catch (fallbackErr) {
+                    // Manejar errores comunes como que el usuario niegue el permiso.
+                    console.error("Fallo al solicitar cualquier cámara:", fallbackErr);
+                    resultEl.textContent = `Error al acceder a la cámara: ${fallbackErr.name}. Asegúrate de dar permiso y usar localhost o HTTPS.`;
+                    return;
+                }
             }
 
             video.srcObject = stream;
@@ -95,10 +103,19 @@
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
-                if (code) {
+                if (code && resultEl.textContent !== code.data) { // Evita lecturas repetidas del mismo código
                     resultEl.textContent = code.data;
-                    // opcional: detener tras leer
+                    
+                    // Feedback visual y auditivo
+                    playBeep();
+                    document.getElementById('output').classList.add('success');
+                    setTimeout(() => {
+                        document.getElementById('output').classList.remove('success');
+                    }, 500);
+
+                    // Opcional: detener tras leer. Descomenta la siguiente línea si lo deseas.
                     // stopCamera();
+
                 } else {
                     // mostrar feedback si desea:
                     // resultEl.textContent = 'Buscando...';
@@ -116,8 +133,15 @@
                 ctx.drawImage(img, 0, 0);
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
-                if (code) resultEl.textContent = code.data;
-                else resultEl.textContent = 'No se detectó QR en la imagen.';
+                if (code) {
+                    resultEl.textContent = code.data;
+                    playBeep();
+                    document.getElementById('output').classList.add('success');
+                    setTimeout(() => document.getElementById('output').classList.remove('success'), 500);
+                }
+                else {
+                    resultEl.textContent = 'No se detectó QR en la imagen.';
+                }
                 URL.revokeObjectURL(url);
             };
             img.onerror = () => {
@@ -125,6 +149,23 @@
                 URL.revokeObjectURL(url);
             };
             img.src = url;
+        }
+
+        function playBeep() {
+            if (!audioCtx) {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.warn("Web Audio API no es soportada en este navegador.");
+                    return;
+                }
+            }
+            const oscillator = audioCtx.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // Tono A4
+            oscillator.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1); // Duración del bip: 100ms
         }
 
         startBtn.addEventListener('click', startCamera);
