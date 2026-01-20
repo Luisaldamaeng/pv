@@ -1,3 +1,21 @@
+/* Asegurar que el contenido de las celdas de la tabla no se recorte */
+#content td {
+    white-space: normal; /* Permitir que el texto salte de línea */
+    word-break: break-all; /* Forzar el salto de palabras si son muy largas */
+}
+
+/* Asegurar que el contenido de las celdas de la tabla no se recorte */
+#content td {
+    /* white-space: normal;  Permitir que el texto salte de línea - eliminado para que no afecte a la 6ta columna */
+    word-break: break-all; /* Forzar el salto de palabras si son muy largas - se mantiene para otras celdas si aplica */
+}
+
+/* Ajustar el ancho mínimo de la columna del código de barras (6ta columna) */
+#content td:nth-child(6) {
+    min-width: 300px; /* Ancho mínimo para mostrar el código de barras completamente */
+    white-space: nowrap; /* Asegurar que el contenido se mantenga en una sola línea */
+}
+
 body {
     background-color: #add8e6;
 }

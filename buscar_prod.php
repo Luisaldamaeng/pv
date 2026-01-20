@@ -4,7 +4,8 @@ require 'config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
-function responderJSON($success, $data, $message = '') {
+function responderJSON($success, $data, $message = '')
+{
     echo json_encode([
         'success' => $success,
         'message' => $message,
@@ -24,8 +25,8 @@ if (!isset($_POST['q']) || empty(trim($_POST['q']))) {
 $q = trim($_POST['q']);
 $conn->set_charset("utf8");
 
-// Columnas a devolver (sin codigoprod y codbar)
-$select_columns = "SELECT nombre, precio1";
+// Columnas a devolver (foto necesaria para preview, se ocultará en tabla por JS)
+$select_columns = "SELECT codigoprod AS cod_prod, nombre, precio1, foto";
 
 // Determinar el tipo de búsqueda
 if (is_numeric($q)) {

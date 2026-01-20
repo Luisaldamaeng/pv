@@ -8,31 +8,51 @@ session_start();
 
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Buscar datos en tiempo real con PHP, MySQL y AJAX">
     <meta name="author" content="Marco Robles">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Almacen</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
     <style>
+        #software-version {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            z-index: 1000;
+            /* Asegurar que esté por encima de otros elementos */
+        }
+
         body {
             background-color: #add8e6;
         }
+
         .modal-custom .modal-content {
             background-color: #ffffe0;
         }
+
         .modal-custom .modal-body,
         .modal-custom .modal-title {
             color: red;
         }
+
         .modal-custom .form-control {
             border: 1px solid #000;
         }
+
         .modal-custom label {
             color: red;
         }
+
         .puntero-celda {
             width: 20px;
             font-weight: bold;
@@ -40,6 +60,7 @@ session_start();
             font-size: 1.2rem;
             text-align: center;
         }
+
         .label-naranja {
             background-color: orange;
             color: black;
@@ -49,63 +70,144 @@ session_start();
 
         /* --- Estilos para tabla con encabezado fijo y cuerpo scrollable --- */
         .table-responsive {
-            overflow-y: visible; /* Permitir que .table-body-scroll maneje el scroll vertical */
+            overflow-y: visible;
+            /* Permitir que .table-body-scroll maneje el scroll vertical */
         }
+
         .table-body-scroll {
-            max-height: 400px; /* Altura máxima antes de que aparezca el scroll */
-            overflow-y: auto; /* Habilitar scroll vertical */
-            border-bottom: 1px solid #dee2e6; /* Borde inferior para separar visualmente */
+            max-height: 400px;
+            /* Altura máxima antes de que aparezca el scroll */
+            overflow-y: auto;
+            /* Habilitar scroll vertical */
+            border-bottom: 1px solid #dee2e6;
+            /* Borde inferior para separar visualmente */
         }
+
         .table-responsive table {
-            margin-bottom: 0 !important; /* Eliminar margen inferior de la tabla */
+            margin-bottom: 0 !important;
+            /* Eliminar margen inferior de la tabla */
             width: 100%;
-            table-layout: fixed; /* Asegurar anchos de columna consistentes */
+            table-layout: fixed;
+            /* Asegurar anchos de columna consistentes */
         }
-        .table-responsive thead, .table-responsive tbody {
-            display: table; /* Cambiado a table para mejor alineación */
+
+        .table-responsive thead,
+        .table-responsive tbody {
+            display: table;
+            /* Cambiado a table para mejor alineación */
             width: 100%;
             table-layout: fixed;
         }
+
         .table-responsive thead tr {
-            position: sticky; /* Fija el encabezado */
+            position: sticky;
+            /* Fija el encabezado */
             top: 0;
-            background-color: #f8f9fa; /* Fondo para el encabezado fijo */
+            background-color: #f8f9fa;
+            /* Fondo para el encabezado fijo */
             z-index: 1;
-            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); /* Sombra para resaltar */
+            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
+            /* Sombra para resaltar */
         }
-        .table-responsive th, .table-responsive td {
+
+        .table-responsive th,
+        .table-responsive td {
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            padding: 0.75rem; /* Ajustar padding si es necesario */
+            padding: 0.75rem;
+            /* Ajustar padding si es necesario */
             vertical-align: middle;
             border-top: 1px solid #dee2e6;
-            border-left: 1px solid #dee2e6; /* Añadir borde izquierdo */
-            border-right: 1px solid #dee2e6; /* Añadir borde derecho */
+            border-left: 1px solid #dee2e6;
+            /* Añadir borde izquierdo */
+            border-right: 1px solid #dee2e6;
+            /* Añadir borde derecho */
         }
-        .table-responsive th:first-child, .table-responsive td:first-child { border-left: none; }
-        .table-responsive th:last-child, .table-responsive tbody tr td:last-child { border-right: none; }
-        
+
+        .table-responsive th:first-child,
+        .table-responsive td:first-child {
+            border-left: none;
+        }
+
+        .table-responsive th:last-child,
+        .table-responsive tbody tr td:last-child {
+            border-right: none;
+        }
+
         /* Anchos específicos para cada columna (ajustar según el contenido) */
-        .table-responsive th:nth-child(1), .table-responsive tbody td:nth-child(1) { width: 30px; } /* Puntero */
-        .table-responsive th:nth-child(2), .table-responsive tbody td:nth-child(2) { width: 60px; } /* Foto */
-        .table-responsive th:nth-child(3), .table-responsive tbody td:nth-child(3) { width: 100px; } /* Cód. Prod. */
-        .table-responsive th:nth-child(4), .table-responsive tbody td:nth-child(4) { width: 250px; } /* Nombre */
-        .table-responsive th:nth-child(5), .table-responsive tbody td:nth-child(5) { width: 100px; } /* Precio 1 */
-        .table-responsive th:nth-child(6), .table-responsive tbody td:nth-child(6) { width: 120px; } /* Cód. Barra */
-        .table-responsive th:nth-child(7), .table-responsive tbody td:nth-child(7) { width: 80px; } /* Selecc */
-        .table-responsive th:nth-child(8), .table-responsive tbody td:nth-child(8) { width: 100px; } /* Costo */
-        .table-responsive th:nth-child(9), .table-responsive tbody td:nth-child(9) { width: 100px; } /* Cant. Caja */
-        .table-responsive th:nth-child(10), .table-responsive tbody td:nth-child(10) { width: 150px; } /* Ruta Foto */
+        .table-responsive th:nth-child(1),
+        .table-responsive tbody td:nth-child(1) {
+            width: 30px;
+        }
+
+        /* Puntero */
+        .table-responsive th:nth-child(2),
+        .table-responsive tbody td:nth-child(2) {
+            width: 60px;
+        }
+
+        /* Foto */
+        .table-responsive th:nth-child(3),
+        .table-responsive tbody td:nth-child(3) {
+            width: 100px;
+        }
+
+        /* Cód. Prod. */
+        .table-responsive th:nth-child(4),
+        .table-responsive tbody td:nth-child(4) {
+            width: 450px;
+        }
+
+        /* Nombre */
+        .table-responsive th:nth-child(5),
+        .table-responsive tbody td:nth-child(5) {
+            width: 100px;
+        }
+
+        /* Precio 1 */
+        .table-responsive th:nth-child(6),
+        .table-responsive tbody td:nth-child(6) {
+            width: 150px;
+        }
+
+        /* Selecc */
+        .table-responsive th:nth-child(7),
+        .table-responsive tbody td:nth-child(7) {
+            width: 80px;
+        }
+
+        /* Costo */
+        .table-responsive th:nth-child(8),
+        .table-responsive tbody td:nth-child(8) {
+            width: 100px;
+        }
+
+        /* Anotación */
+        .table-responsive th:nth-child(9),
+        .table-responsive tbody td:nth-child(9) {
+            width: 150px;
+        }
+
+        /* Ruta Foto */
+        .table-responsive th:nth-child(10),
+        .table-responsive tbody td:nth-child(10) {
+            width: 150px;
+        }
+
+        /* Ruta Foto */
         /* Fin de anchos específicos */
 
         @media print {
             body * {
                 visibility: hidden;
             }
-            #print-area, #print-area * {
+
+            #print-area,
+            #print-area * {
                 visibility: visible;
             }
+
             #print-area {
                 position: absolute;
                 left: 0;
@@ -129,6 +231,7 @@ session_start();
                 gap: 0;
                 width: 100%;
             }
+
             #print-area .label-item {
                 border: 1px solid #000;
                 padding: 10px;
@@ -136,22 +239,27 @@ session_start();
                 font-family: Arial, sans-serif;
                 page-break-inside: avoid;
             }
+
             #print-area .label-code {
                 text-align: left;
                 font-size: 22pt;
             }
+
             #print-area .label-name {
                 font-weight: bold;
                 font-size: 16pt;
                 text-transform: uppercase;
                 margin: 10px 0;
-                min-height: 50px; /* Para alinear precios */
+                min-height: 50px;
+                /* Para alinear precios */
             }
+
             #print-area .label-price {
                 font-weight: bold;
                 font-size: 22pt;
                 text-align: right;
             }
+
             .footer-controls {
                 display: flex;
                 justify-content: space-between;
@@ -161,11 +269,14 @@ session_start();
 </head>
 
 <body>
+    <div id="software-version">v1.0.3</div>
+
     <main>
         <div class="container py-4 text-center">
-                        <div class="row">
+            <div class="row">
                 <div class="col-12 text-center">
-                    <h2>Productos <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#nuevoModal">Nuevo</button></h2>
+                    <h2>Productos <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#nuevoModal">Nuevo</button></h2>
                 </div>
             </div>
 
@@ -194,14 +305,18 @@ session_start();
                 <div class="col-auto">
                     <button type="button" id="btn-limpiar" class="btn btn-secondary btn-sm">Limpiar</button>
                     <button type="button" id="btn-duplicar" class="btn btn-success btn-sm">Duplicar en Tabla</button>
+                    <button type="button" id="btn-lector-codbar" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#lectorModal">📱 Lector</button>
                     <button type="button" id="btn-imprimir" class="btn btn-info btn-sm">Imprimir</button>
                     <button type="button" id="btn-etiquetas" class="btn btn-success btn-sm">Etiquetas</button>
                     <button type="button" id="btn-reset-selecc" class="btn btn-warning btn-sm">Poner Selecc a
                         Cero</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="window.open('costo_mercaderia.html', '_blank')">
+                    <button type="button" class="btn btn-primary btn-sm"
+                        onclick="window.open('costo_mercaderia.html', '_blank')">
                         Costo
                         Mercaderia</button>
-                    <button type="button" class="btn btn-dark btn-sm" onclick="window.open('costo_caramelo.html', '_blank')">
+                    <button type="button" class="btn btn-dark btn-sm"
+                        onclick="window.open('costo_caramelo.php', '_blank')">
                         Costo
                         Caramelo</button>
                 </div>
@@ -210,25 +325,26 @@ session_start();
             <div class="row py-4">
                 <div class="col">
                     <div class="table-responsive">
-                    <table class="table table-sm table-bordered table-striped">
-                        <thead>
-                           <tr>
-                            <th></th>
-                            <th class="sort asc">Foto</th>
-                            <th class="sort asc">Cód. Prod.</th>
-                            <th class="sort asc">Nombre</th>
-                            <th class="sort asc">Precio 1</th>
-                            <th class="sort asc">Cód. Barra</th>
-                            <th id="filtro-selecc" style="cursor: pointer;">Selecc <span id="filtro-selecc-icono"></span></th>
-                            <th class="sort asc">Costo</th>
-                            <th class="sort asc">Cant. Caja</th>
-                            <th class="sort asc">Ruta Foto</th>
-                           </tr>
-                        </thead>
-                        <div class="table-body-scroll">
-                            <tbody id="content"></tbody>
-                        </div>
-                    </table>
+                        <table class="table table-sm table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th class="sort asc">Foto</th>
+                                    <th class="sort asc">Cód. Prod.</th>
+                                    <th class="sort asc">Nombre</th>
+                                    <th class="sort asc">Precio 1</th>
+                                    <th class="sort asc">Cód. Barra</th>
+                                    <th class="sort asc" id="filtro-selecc" style="cursor: pointer;">Selecc <span
+                                            id="filtro-selecc-icono"></span></th>
+                                    <th class="sort asc">Costo</th>
+                                    <th class="sort asc">Anotación</th>
+                                    <th class="sort asc">Ruta Foto</th>
+                                </tr>
+                            </thead>
+                            <div class="table-body-scroll">
+                                <tbody id="content"></tbody>
+                            </div>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -263,12 +379,13 @@ session_start();
                 <input type="hidden" id="orderType" value="asc"> <!-- Orden ascendente -->
                 <input type="hidden" id="filtroSeleccActivo" value="0">
             </div>
-            
+
         </div>
     </main>
 
     <!-- Modal de la Cámara -->
-    <div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true" data-bs-focus="false">
+    <div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true"
+        data-bs-focus="false">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -276,12 +393,14 @@ session_start();
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
-                    <video id="camera-stream" width="100%" height="auto" autoplay playsinline style="display: none;"></video>
+                    <video id="camera-stream" width="100%" height="auto" autoplay playsinline
+                        style="display: none;"></video>
                     <canvas id="camera-canvas" style="display: none;"></canvas>
-                     <div id="camera-placeholder">Presiona "Abrir Cámara" para iniciar.</div>
+                    <div id="camera-placeholder">Presiona "Abrir Cámara" para iniciar.</div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btn-close-camera">Cerrar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        id="btn-close-camera">Cerrar</button>
                     <button type="button" class="btn btn-primary" id="btn-open-camera">Abrir Cámara</button>
                     <button type="button" class="btn btn-success" id="btn-take-photo" disabled>Tomar Foto</button>
                 </div>
@@ -302,8 +421,8 @@ session_start();
                         <input type="hidden" id="edita-id" name="id">
                         <div class="mb-3">
                             <label for="edita-nombre" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="edita-nombre" name="nombre" required x-webkit-speech
-                                speech>
+                            <input type="text" class="form-control" id="edita-nombre" name="nombre" required
+                                x-webkit-speech speech>
                         </div>
                         <div class="mb-3">
                             <label for="edita-precio1" class="form-label">Precio 1</label>
@@ -311,7 +430,8 @@ session_start();
                         </div>
                         <div class="mb-3">
                             <label for="edita-codbar" class="form-label">Código de Barra</label>
-                            <input type="text" class="form-control" id="edita-codbar" name="codbar" x-webkit-speech speech>
+                            <input type="text" class="form-control" id="edita-codbar" name="codbar" x-webkit-speech
+                                speech>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="edita-selecc" name="selecc">
@@ -322,8 +442,10 @@ session_start();
                             <input type="number" step="any" class="form-control" id="edita-costo" name="costo">
                         </div>
                         <div class="mb-3">
-                            <label for="edita-CANTCAJA" class="form-label">Cantidad por Caja</label>
-                            <input type="number" class="form-control" id="edita-CANTCAJA" name="CANTCAJA">
+                            <label for="edita-anotacion" class="form-label">Anotación <span
+                                    id="edita-anotacion-longitud" class="badge bg-secondary ms-2"
+                                    style="display:none">0</span></label>
+                            <input type="text" class="form-control" id="edita-anotacion" name="anotacion">
                         </div>
                         <div class="mb-3">
                             <label for="edita-CODNUMERI" class="form-label">Código Numérico</label>
@@ -415,8 +537,10 @@ session_start();
                             <input type="number" step="any" class="form-control" id="nuevo-costo" name="costo">
                         </div>
                         <div class="mb-3">
-                            <label for="nuevo-cantcaja" class="form-label">Cantidad por Caja</label>
-                            <input type="number" class="form-control" id="nuevo-cantcaja" name="CANTCAJA">
+                            <label for="nuevo-anotacion" class="form-label">Anotación <span
+                                    id="nuevo-anotacion-longitud" class="badge bg-secondary ms-2"
+                                    style="display:none">0</span></label>
+                            <input type="text" class="form-control" id="nuevo-anotacion" name="anotacion">
                         </div>
                         <div class="mb-3">
                             <label for="nuevo-codnumeri" class="form-label">Código Numérico</label>
@@ -429,15 +553,53 @@ session_start();
                     </form>
                 </div>
             </div>
-                    </div>
+        </div>
 
 
-    <div id="print-area"></div>
+        <div id="print-area"></div>
         <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
+
+        <!-- Modal Lector de Código de Barras -->
+        <div class="modal fade" id="lectorModal" tabindex="-1" aria-labelledby="lectorModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="lectorModalLabel">Lector de Código de Barras</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="lector-container" class="text-center">
+                            <video id="lector-video" width="100%"
+                                style="border: 2px solid #dee2e6; display: none;"></video>
+                            <canvas id="lector-canvas" width="640" height="480" style="display: none;"></canvas>
+                            <div id="lector-placeholder" class="alert alert-info">
+                                Presiona "Iniciar Lector" para escanear un código de barras.
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label for="lector-resultado" class="form-label">Código Detectado:</label>
+                            <input type="text" class="form-control" id="lector-resultado" readonly>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="btn-iniciar-lector" class="btn btn-primary">Iniciar Lector</button>
+                        <button type="button" id="btn-copiar-codigo" class="btn btn-success" disabled>Copiar
+                            Código</button>
+                        <button type="button" id="btn-buscar-codigo" class="btn btn-info" disabled>Buscar en
+                            Tabla</button>
+                        <button type="button" id="btn-cerrar-lector" class="btn btn-secondary"
+                            data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+        <script src="lector_codbar.js" defer></script>
         <script src="productos.js" defer></script>
-        <script src="camara.js"></script>
+        <script src="camara.js" defer></script>
 </body>
 
 </html>

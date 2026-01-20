@@ -1,6 +1,7 @@
 <?php
 
-function responderJSON($status, $message = '') {
+function responderJSON($status, $message = '')
+{
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode([
         'status' => $status,
@@ -11,10 +12,10 @@ function responderJSON($status, $message = '') {
 
 require 'config.php';
 
-$id = $_POST['id'] ?? null;
+$id = isset($_POST['id']) ? trim($_POST['id']) : null;
 
 if (!$id) {
-    responderJSON('error', 'No se proporcionó un ID para eliminar.');
+    responderJSON('error', 'No se proporcionó un ID válido para eliminar.');
 }
 
 $sql = "DELETE FROM producto WHERE codigoprod = ?";
@@ -27,7 +28,11 @@ if ($stmt === false) {
 $stmt->bind_param('s', $id);
 
 if ($stmt->execute()) {
-    responderJSON('success', 'Producto eliminado correctamente.');
+    if ($stmt->affected_rows > 0) {
+        responderJSON('success', 'Producto eliminado correctamente.');
+    } else {
+        responderJSON('error', 'No se encontró el producto con ID: ' . $id . ' (Puede que ya haya sido eliminado).');
+    }
 } else {
     responderJSON('error', 'Error al ejecutar la eliminación: ' . $stmt->error);
 }

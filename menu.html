@@ -1,77 +1,127 @@
-
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Botones</title>
-<style>
-body {
-  background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Nota_de_100_reais_%28dinheiro_do_Brasil%29.jpg/600px-Nota_de_100_reais_%28dinheiro_do_Brasil%29.jpg'), url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/ARG-1000_Pesos-2017-obverse.jpg/640px-ARG-1000_Pesos-2017-obverse.jpg'), url('https://upload.wikimedia.org/wikipedia/commons/f/f7/50000_Guaran%C3%ADes.jpg');
-  background-position: top left, top center, top right;
-  background-repeat: no-repeat;
-  background-size: 33.33% auto;
-  background-color: lightblue; /* Fondo celeste */
-  margin: 0;
-}
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#32CD32">
+  <title>Botones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registrado', reg))
+          .catch(err => console.log('Error al registrar Service Worker', err));
+      });
+    }
+  </script>
+  <style>
+    body {
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Nota_de_100_reais_%28dinheiro_do_Brasil%29.jpg/600px-Nota_de_100_reais_%28dinheiro_do_Brasil%29.jpg'), url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/ARG-1000_Pesos-2017-obverse.jpg/640px-ARG-1000_Pesos-2017-obverse.jpg'), url('https://upload.wikimedia.org/wikipedia/commons/f/f7/50000_Guaran%C3%ADes.jpg');
+      background-position: top left, top center, top right;
+      background-repeat: no-repeat;
+      background-size: 33.33% auto;
+      background-color: lightblue;
+      /* Fondo celeste */
+      margin: 0;
+    }
 
-.main-title {
-  text-align: center;
-  color: red;
-  padding-top: 20px;
-  text-shadow: 2px 2px 4px #000000;
-}
+    .main-title {
+      text-align: center;
+      color: red;
+      padding-top: 20px;
+      text-shadow: 2px 2px 4px #000000;
+    }
 
-.button-container {
-  display: flex;
-  justify-content: space-around; /* Distribuye las columnas */
-  align-items: flex-start; /* Alinea las columnas arriba */
-  height: 100vh;
-  padding: 20px;
-}
+    .button-container {
+      display: flex;
+      justify-content: space-around;
+      /* Distribuye las columnas */
+      align-items: flex-start;
+      /* Alinea las columnas arriba */
+      height: 100vh;
+      padding: 20px;
+    }
 
-.column {
-  display: flex;
-  flex-direction: column; /* Apila los botones verticalmente */
-  align-items: center;
-}
+    .column {
+      display: flex;
+      flex-direction: column;
+      /* Apila los botones verticalmente */
+      align-items: center;
+    }
 
-button {
-  margin: 5px; /* Botones más juntos */
-  padding: 15px 25px;
-  font-size: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  background-color: limegreen; /* Color verde limón */
-  color: red;
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px #228B22; /* Sombra verde oscuro */
-  transition: all 0.2s ease;
-}
+    button {
+      margin: 5px;
+      /* Botones más juntos */
+      padding: 15px 25px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: limegreen;
+      /* Color verde limón */
+      color: red;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px #228B22;
+      /* Sombra verde oscuro */
+      transition: all 0.2s ease;
+    }
 
-button:hover {
-  background-color: #228B22; /* Verde oscuro al pasar el ratón */
-}
-</style>
+    button:hover {
+      background-color: #228B22;
+      /* Verde oscuro al pasar el ratón */
+    }
+
+    /* Estilos para dispositivos móviles (Responsive) */
+    @media (max-width: 768px) {
+      body {
+        background-image: none;
+        /* Quita las imágenes para mejorar legibilidad en móvil */
+      }
+
+      .button-container {
+        flex-direction: column;
+        /* Apila las columnas verticalmente */
+        align-items: center;
+        height: auto;
+        /* Permite que la altura crezca según el contenido */
+      }
+
+      .column {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+
+      button {
+        width: 90%;
+        /* Botones más anchos para facilitar el toque */
+        max-width: 350px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<h1 class="main-title">Menu Principal</h1>
-<div class="button-container">
-  <div class="column">
-    <button onclick="window.open('http://192.168.1.152/PV/buscar_prod.html', '_blank')">buscar_prod</button>
-    <button onclick="window.open('http://192.168.1.152/PV/lectorQR.html', '_blank')">lector de codigo QR</button>
-    <button onclick="window.open('http://192.168.1.152/PV/visor_xml.html', '_blank')">visor_xml</button>
+  <h1 class="main-title">Menu Principal</h1>
+  <div class="button-container">
+    <div class="column">
+      <button onclick="window.open('/PV/buscar_prod.html', '_blank')">buscar_prod</button>
+      <button onclick="window.open('/PV/lectorQR.html', '_blank')">lector de codigo QR</button>
+      <button onclick="window.open('/PV/visor_xml.html', '_blank')">visor_xml</button>
+    </div>
+    <div class="column">
+      <button onclick="window.open('/PV/productos.php', '_blank')">producto</button>
+      <button onclick="window.open('/libreta/carga_datos.php', '_blank')">carga_datos</button>
+      <button onclick="window.open('/PV/costo_mercaderia.html', '_blank')">costo_mercaderia</button>
+    </div>
+    <div class="column">
+      <button onclick="window.open('/libreta/crud_clientes.php', '_blank')">crud_clientes</button>
+      <button onclick="window.open('/libreta/editar_libreta.php', '_blank')">editar_libreta</button>
+      <button onclick="window.open('/PV/costo_caramelo.php', '_blank')">costo_caramelo</button>
+    </div>
   </div>
-  <div class="column">
-    <button onclick="window.open('http://192.168.1.152/PV/productos.php', '_blank')">producto</button>
-    <button onclick="window.open('http://192.168.1.152/libreta/carga_datos.php', '_blank')">carga_datos</button>
-    <button onclick="window.open('http://192.168.1.152/pv/costo_mercaderia.html', '_blank')">costo_mercaderia</button>
-  </div>
-  <div class="column">
-    <button onclick="window.open('http://192.168.1.152/libreta/crud_clientes.php', '_blank')">crud_clientes</button>
-    <button onclick="window.open('http://192.168.1.152/libreta/editar_libreta.php', '_blank')">editar_libreta</button>
-    <button onclick="window.open('http://192.168.1.152/pv/costo_caramelo.html', '_blank')">costo_caramelo</button>
-  </div>
-</div>
 
 </body>
+
 </html>

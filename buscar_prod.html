@@ -1,29 +1,79 @@
 <!-- File: /c:/xampp/htdocs/PV/buscar_prod.html -->
 <!doctype html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <title>Buscar producto</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#32CD32">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
+    </script>
     <style>
-        body{font-family:Arial, sans-serif;max-width:780px;margin:30px auto;padding:0 20px}
-        label,input,button{font-size:16px}
-        #result{margin-top:18px;border:1px solid #ddd;padding:12px;border-radius:6px}
-        table{width:100%;border-collapse:collapse}
-        th,td{padding:8px;border:1px solid #eee;text-align:left; font-size: 28px;}
-        .muted{color:#666;font-size:14px}
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 780px;
+            margin: 30px auto;
+            padding: 0 20px
+        }
+
+        label,
+        input,
+        button {
+            font-size: 16px
+        }
+
+        #result {
+            margin-top: 18px;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 6px
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border: 1px solid #eee;
+            text-align: left;
+            font-size: 28px;
+        }
+
+        .muted {
+            color: #666;
+            font-size: 14px
+        }
     </style>
 </head>
+
 <body>
     <h2>Buscar producto</h2>
     <p class="muted">Ingrese el código de producto (<=4 caracteres) o el código de barra (>4) y presione Buscar.</p>
 
     <form id="searchForm">
-        <label for="q">Código / Código de barra:</label><br/>
+        <label for="q">Código / Código de barra:</label><br />
         <input id="q" name="q" type="text" autocomplete="off" required style="width:320px;margin-top:8px;padding:8px" />
         <button type="submit" style="padding:8px 12px;margin-left:8px">Buscar</button>
     </form>
 
     <div id="result" aria-live="polite"></div>
+
+    <div id="img-preview"
+        style="display:none; margin-top: 18px; text-align: center; border: 1px solid #ddd; padding: 10px; border-radius: 6px; background-color: #fff;">
+        <img id="img-display" src="" alt="Foto del producto"
+            style="max-width: 200px; max-height: 200px; object-fit: contain;">
+        <p id="img-debug" style="font-size: 12px; color: #777; margin-top: 5px; font-family: monospace;"></p>
+    </div>
 
     <script>
         const qInput = document.getElementById('q');
@@ -39,7 +89,8 @@
             if (!q) { result.innerHTML = '<p class="muted">Ingrese un código.</p>'; return; }
 
             result.innerHTML = '<p class="muted">Buscando…</p>';
-            
+            document.getElementById('img-preview').style.display = 'none';
+
             try {
                 const fd = new FormData();
                 fd.append('q', q);
@@ -63,10 +114,34 @@
                     return;
                 }
 
+                // Mostrar foto si existe en el primer resultado
+                const firstRow = rows[0];
+                // Buscar clave 'rutafoto' insensible a mayúsculas/minúsculas
+                // Buscamos variantes comunes del nombre de la columna (rutafoto, ruta_foto, foto, etc.)
+                const photoKey = Object.keys(firstRow).find(k => ['rutafoto', 'ruta_foto', 'foto', 'imagen'].includes(k.toLowerCase().replace(/\s/g, '')));
+
+                if (photoKey && firstRow[photoKey]) {
+                    let ruta = firstRow[photoKey];
+                    // Reemplazar barras invertidas (\) por barras normales (/)
+                    ruta = ruta.replace(/\\/g, '/');
+                    // Si la ruta es absoluta local (contiene htdocs), convertirla a relativa web
+                    // Ejemplo: C:/xampp/htdocs/PV/foto.jpg se convierte en /PV/foto.jpg
+                    const lowerRuta = ruta.toLowerCase();
+                    if (lowerRuta.includes('htdocs')) {
+                        ruta = ruta.substring(lowerRuta.indexOf('htdocs') + 6);
+                    } else if (lowerRuta.includes('/pv/')) {
+                        ruta = ruta.substring(lowerRuta.indexOf('/pv/'));
+                    }
+                    document.getElementById('img-display').src = ruta;
+                    document.getElementById('img-debug').textContent = 'Ruta: ' + ruta;
+                    document.getElementById('img-preview').style.display = 'block';
+                }
+
                 // Construir tabla de resultados
                 let html = '<table><thead><tr>';
-                // usar claves de la primera fila para cabeceras
-                const keys = Object.keys(rows[0]);
+                // usar claves de la primera fila para cabeceras, excluyendo foto
+                const keys = Object.keys(rows[0]).filter(k => !['rutafoto', 'ruta_foto', 'foto', 'imagen'].includes(k.toLowerCase().replace(/\s/g, '')));
+
                 for (const k of keys) html += `<th>${escapeHtml(k)}</th>`;
                 html += '</tr></thead><tbody>';
                 for (const r of rows) {
@@ -115,8 +190,9 @@
                 '"': '&quot;',
                 "'": '&#39;'
             };
-            return str.replace(/[&<>"']/g, function(m) { return map[m]; });
+            return str.replace(/[&<>"']/g, function (m) { return map[m]; });
         }
     </script>
 </body>
+
 </html>
