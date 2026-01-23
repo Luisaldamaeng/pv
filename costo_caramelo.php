@@ -1,11 +1,16 @@
-﻿<!DOCTYPE html>
+﻿<?php
+require_once 'config.php';
+?>
+<!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico?v=<?php echo APP_VERSION; ?>" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Precio golosina</title>
+    <title>Precio golosina v
+        <?php echo APP_VERSION; ?>
+    </title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -22,11 +27,13 @@
         }
 
         .container {
-            background-color: #f1f8e9; /* Verde pálido claro */
+            background-color: #f1f8e9;
+            /* Verde pálido claro */
             padding: 40px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border: 3px solid #c8a2c8; /* Contorno Lila */
+            border: 3px solid #c8a2c8;
+            /* Contorno Lila */
             width: 100%;
             max-width: 600px;
             box-sizing: border-box;
@@ -43,6 +50,19 @@
             font-size: 32px;
             font-weight: 700;
             width: 100%;
+        }
+
+        #software-version {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            z-index: 1000;
+            cursor: pointer;
         }
 
         .search-container {
@@ -123,7 +143,8 @@
             font-size: 14px;
         }
 
-        .form-group input, .search-container input {
+        .form-group input,
+        .search-container input {
             width: 100%;
             padding: 10px;
             border: 1px solid #e74c3c;
@@ -244,6 +265,8 @@
 </head>
 
 <body>
+    <div id="software-version" onclick="limpiarCache()" title="Click para limpiar caché">v<?php echo APP_VERSION; ?>
+    </div>
     <div class="container">
         <h1>Costo Caramelo</h1>
 
@@ -473,26 +496,26 @@
         });
 
         // Eventos de formateo en tiempo real
-        precioBolsaInput.addEventListener("input", function() {
+        precioBolsaInput.addEventListener("input", function () {
             this.value = formatInput(this.value, 0);
         });
-        pesoBolsaInput.addEventListener("input", function() {
+        pesoBolsaInput.addEventListener("input", function () {
             this.value = formatInput(this.value, 2);
         });
-        cantidadGolosinasInput.addEventListener("input", function() {
+        cantidadGolosinasInput.addEventListener("input", function () {
             this.value = formatInput(this.value, 0);
         });
-        pesoMuestraInput.addEventListener("input", function() {
+        pesoMuestraInput.addEventListener("input", function () {
             this.value = formatInput(this.value, 2);
         });
-        porcentajeGananciaInput.addEventListener("input", function() {
+        porcentajeGananciaInput.addEventListener("input", function () {
             this.value = formatInput(this.value, 2);
         });
 
         function formatInput(val, maxDecimals) {
             // Permitir solo números, puntos y una coma
             let clean = val.replace(/[^0-9,]/g, "");
-            
+
             // Si tiene coma, separar
             let parts = clean.split(",");
             let integerPart = parts[0];
@@ -511,10 +534,10 @@
 
         function formatNumber(num, decimals) {
             if (num === null || num === undefined || isNaN(num) || num === "") return "";
-            
+
             let val = parseFloat(num);
             if (isNaN(val)) return "";
-            
+
             let fixed = val.toFixed(decimals);
             let parts = fixed.split(".");
             let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -539,7 +562,7 @@
             }
 
             const formData = new FormData();
-            
+
             // Enviamos los datos limpios (numéricos estándar) al servidor
             formData.append('codigoprod', id);
             formData.append('precio_bolsa', parseNumber(precioBolsaInput.value));
@@ -555,18 +578,18 @@
                 method: 'POST',
                 body: formData
             })
-            .then(r => r.json())
-            .then(res => {
-                if (res.status === 'success') {
-                    alert("¡Guardado correctamente!");
-                } else {
-                    alert("Error servidor: " + res.message);
-                }
-            })
-            .catch(err => {
-                console.error("Error Fetch:", err);
-                alert("Error técnico al guardar: " + err);
-            });
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        alert("¡Guardado correctamente!");
+                    } else {
+                        alert("Error servidor: " + res.message);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error Fetch:", err);
+                    alert("Error técnico al guardar: " + err);
+                });
         });
 
         repetirButton.addEventListener("click", function () {
@@ -603,6 +626,20 @@
                 listaBusqueda.style.display = "none";
             }
         });
+
+        function limpiarCache() {
+            if (confirm('¿Desea limpiar la caché de la aplicación y recargar?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                if ('caches' in window) {
+                    caches.keys().then((names) => {
+                        for (let name of names) caches.delete(name);
+                    });
+                }
+                alert('Caché limpiada. Recargando...');
+                window.location.reload(true);
+            }
+        }
     </script>
 </body>
 

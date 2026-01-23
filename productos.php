@@ -2,21 +2,23 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
+require_once 'config.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico?v=<?php echo APP_VERSION; ?>" type="image/x-icon">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Buscar datos en tiempo real con PHP, MySQL y AJAX">
     <meta name="author" content="Marco Robles">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Almacen</title>
+    <title>Almacen v<?php echo APP_VERSION; ?></title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="chatbot.css?v=<?php echo APP_VERSION; ?>">
 
     <style>
         #software-version {
@@ -29,6 +31,7 @@ session_start();
             border-radius: 5px;
             font-size: 0.8em;
             z-index: 1000;
+            cursor: pointer;
             /* Asegurar que esté por encima de otros elementos */
         }
 
@@ -269,7 +272,34 @@ session_start();
 </head>
 
 <body>
-    <div id="software-version">v1.0.3</div>
+    <!-- Estructura del Chatbot -->
+    <div id="chatbot-bubble" class="chatbot-bubble" style="z-index: 99999 !important;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp"
+            style="width: 35px; height: 35px;">
+    </div>
+
+    <div id="chat-window" class="chat-window" style="z-index: 99999 !important;">
+        <div class="chat-header">
+            <span>WhatsApp PV</span>
+            <span id="chat-close" class="chat-close">&times;</span>
+        </div>
+        <div id="chat-menu" class="chat-menu-persistent">
+            <!-- Los botones fijos aparecerán aquí -->
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <!-- Los mensajes aparecerán aquí -->
+        </div>
+        <div class="chat-input-area">
+            <input type="file" id="chat-file" accept="image/*" style="display: none;">
+            <button id="chat-image" title="Subir imagen"
+                style="background: none; border: none; font-size: 20px; cursor: pointer;">📷</button>
+            <input type="text" id="chat-input" placeholder="Escribe un mensaje...">
+            <button id="chat-send">▶</button>
+        </div>
+    </div>
+
+    <div id="software-version" onclick="limpiarCache()" title="Click para limpiar caché">v<?php echo APP_VERSION; ?>
+    </div>
 
     <main>
         <div class="container py-4 text-center">
@@ -597,9 +627,25 @@ session_start();
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
-        <script src="lector_codbar.js" defer></script>
-        <script src="productos.js" defer></script>
-        <script src="camara.js" defer></script>
+        <script src="lector_codbar.js?v=<?php echo APP_VERSION; ?>" defer></script>
+        <script src="productos.js?v=<?php echo APP_VERSION; ?>" defer></script>
+        <script src="camara.js?v=<?php echo APP_VERSION; ?>" defer></script>
+        <script src="chatbot.js?v=<?php echo APP_VERSION; ?>" defer></script>
+        <script>
+            function limpiarCache() {
+                if (confirm('¿Desea limpiar la caché de la aplicación y recargar?')) {
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    if ('caches' in window) {
+                        caches.keys().then((names) => {
+                            for (let name of names) caches.delete(name);
+                        });
+                    }
+                    alert('Caché limpiada. Recargando...');
+                    window.location.reload(true);
+                }
+            }
+        </script>
 </body>
 
 </html>

@@ -12,6 +12,20 @@ try {
     require 'config.php';
 
     $columns = ['codigoprod', 'nombre', 'precio1', 'codbar', 'selecc', 'costo', 'anotacion', 'foto'];
+
+    // Mapeo de índices de columnas (cellIndex desde el frontend) a nombres de columnas en BD
+    $sortColumns = [
+        1 => 'foto',
+        2 => 'codigoprod',
+        3 => 'nombre',
+        4 => 'precio1',
+        5 => 'codbar',
+        6 => 'selecc',
+        7 => 'costo',
+        8 => 'anotacion',
+        9 => 'foto'
+    ];
+
     $table = "producto";
     $id = 'codigoprod';
 
@@ -65,8 +79,9 @@ try {
     if (isset($_POST['orderCol'])) {
         $orderCol = intval($_POST['orderCol']);
         $orderType = isset($_POST['orderType']) ? $_POST['orderType'] : 'asc';
-        if (in_array(strtolower($orderType), ['asc', 'desc']) && isset($columns[$orderCol])) {
-            $columnaOrdenar = $columns[$orderCol];
+
+        if (in_array(strtolower($orderType), ['asc', 'desc']) && isset($sortColumns[$orderCol])) {
+            $columnaOrdenar = $sortColumns[$orderCol];
             $sOrder = "ORDER BY " . $columnaOrdenar . ' ' . $orderType;
         }
     }

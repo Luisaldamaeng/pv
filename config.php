@@ -1,4 +1,7 @@
 <?php
+define('APP_VERSION', '1.0.5'); // Nueva versión para forzar actualización de caché
+define('GEMINI_API_KEY', 'AIzaSyDD9Uf-1syK2ZBjgoLeprd5BVOKAKqB9Tg'); // Clave configurada
+define('STORE_PHONE', '595992863837'); // Número para WhatsApp
 
 /**
  * Conexión a base de datos de MySQL con PHP

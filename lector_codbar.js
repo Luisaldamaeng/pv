@@ -28,9 +28,9 @@ class LectorCodigoBarras {
         if (this._zxingModule) return this._zxingModule;
         try {
             // Cargar @zxing/browser
-            const browserMod = await import('https://cdn.skypack.dev/@zxing/browser');
+            const browserMod = await import('https://cdn.jsdelivr.net/npm/@zxing/browser@latest/+esm');
             // Cargar @zxing/library (donde están DecodeHintType y NotFoundException)
-            const libraryMod = await import('https://cdn.skypack.dev/@zxing/library');
+            const libraryMod = await import('https://cdn.jsdelivr.net/npm/@zxing/library@latest/+esm');
 
             this._zxingModule = {
                 browser: browserMod.default || browserMod, // Manejar export default o directas
