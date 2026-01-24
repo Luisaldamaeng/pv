@@ -2,3 +2,6 @@ producto.DBF
 test_gemini.py
 .gemini/
 imagen/
+config.php
+debug_log.txt
+*.log
