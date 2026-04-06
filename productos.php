@@ -455,8 +455,24 @@ require_once 'config.php';
                                 x-webkit-speech speech>
                         </div>
                         <div class="mb-3">
-                            <label for="edita-precio1" class="form-label">Precio 1</label>
-                            <input type="number" step="any" class="form-control" id="edita-precio1" name="precio1">
+                            <label for="edita-precio1" class="form-label">Precio 1 (Monto) e Utilidad (%)</label>
+                            <div class="row g-2">
+                                <div class="col-8">
+                                    <input type="number" step="any" class="form-control" id="edita-precio1" name="precio1" placeholder="Digite el monto">
+                                </div>
+                                <div class="col-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">%</span>
+                                        <input type="number" step="any" class="form-control text-center" id="edita-porcentaje-margen" value="25" title="Porcentaje de Margen">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-check mt-2 mb-2 p-2" style="background-color: #e8f8f5; border: 1px solid #117a65; border-radius: 5px;">
+                                <input class="form-check-input border-dark" type="checkbox" id="check-calcular-margen-edita" style="transform: scale(1.4); margin-left: -1em; margin-top: 0.25em;">
+                                <label class="form-check-label ms-2" for="check-calcular-margen-edita" style="color: #000; font-weight: 700; cursor: pointer;">
+                                    Aplicar % de utilidad y enviar a Costo
+                                </label>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="edita-codbar" class="form-label">Código de Barra</label>
@@ -550,8 +566,24 @@ require_once 'config.php';
                                 x-webkit-speech speech>
                         </div>
                         <div class="mb-3">
-                            <label for="nuevo-precio1" class="form-label">Precio 1</label>
-                            <input type="number" step="any" class="form-control" id="nuevo-precio1" name="precio1">
+                            <label for="nuevo-precio1" class="form-label">Precio 1 (Monto) e Utilidad (%)</label>
+                            <div class="row g-2">
+                                <div class="col-8">
+                                    <input type="number" step="any" class="form-control" id="nuevo-precio1" name="precio1" placeholder="Digite el monto">
+                                </div>
+                                <div class="col-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">%</span>
+                                        <input type="number" step="any" class="form-control text-center" id="nuevo-porcentaje-margen" value="25" title="Porcentaje de Margen">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-check mt-2 mb-2 p-2" style="background-color: #e8f8f5; border: 1px solid #117a65; border-radius: 5px;">
+                                <input class="form-check-input border-dark" type="checkbox" id="check-calcular-margen" style="transform: scale(1.4); margin-left: -1em; margin-top: 0.25em;">
+                                <label class="form-check-label ms-2" for="check-calcular-margen" style="color: #000; font-weight: 700; cursor: pointer;">
+                                    Aplicar % de utilidad y enviar a Costo
+                                </label>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="nuevo-codbar" class="form-label">Código de Barra</label>
@@ -632,6 +664,23 @@ require_once 'config.php';
         <script src="camara.js?v=<?php echo APP_VERSION; ?>" defer></script>
         <script src="chatbot.js?v=<?php echo APP_VERSION; ?>" defer></script>
         <script>
+            // Asegurar que no haya Service Workers activos (Eliminar PWA)
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                    for (let registration of registrations) {
+                        registration.unregister().then(function(boolean) {
+                            if (boolean) console.log('Service Worker desregistrado.');
+                        });
+                    }
+                });
+            }
+            // Limpiar cachés manualmente al cargar
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    for (let name of names) caches.delete(name);
+                });
+            }
+
             function limpiarCache() {
                 if (confirm('¿Desea limpiar la caché de la aplicación y recargar?')) {
                     localStorage.clear();
@@ -646,6 +695,7 @@ require_once 'config.php';
                 }
             }
         </script>
+
 </body>
 
 </html>

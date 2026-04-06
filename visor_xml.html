@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -11,18 +12,21 @@
         body {
             background-color: #f8f9fa;
         }
+
         .container {
             background-color: white;
             border-radius: 8px;
             padding: 2rem;
             margin-top: 2rem;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
         th {
             background-color: #e9ecef;
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
@@ -36,7 +40,8 @@
                 <div class="input-group">
                     <label for="fileUpload" class="btn btn-secondary">Examinar</label>
                     <input type="file" id="fileUpload" accept=".xml" style="display: none;">
-                    <input type="text" class="form-control" id="rutaXmlInput" placeholder="Seleccione un archivo XML" readonly>
+                    <input type="text" class="form-control" id="rutaXmlInput" placeholder="Seleccione un archivo XML"
+                        readonly>
                     <!-- Botón para agregar a la base de datos -->
                     <button class="btn btn-info" type="button" id="btnAgregarProductos" style="display: none;">
                         Agregar a Productos
@@ -49,7 +54,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Aquí se generará la tabla con los datos del XML -->
         <table class="table table-bordered table-striped" id="tablaextrae">
             <thead>
@@ -69,259 +74,260 @@
     </div>
 
     <script>
-    // Añadir listeners cuando el DOM esté cargado
-    document.addEventListener('DOMContentLoaded', function() {
-        const dateTimeElement = document.getElementById('datetime');
-        const btnProcesar = document.getElementById('btnProcesar');
-        const inputRuta = document.getElementById('rutaXmlInput');
-        const fileUpload = document.getElementById('fileUpload');
-        const btnGuardarCambios = document.getElementById('btnGuardarCambios');
-        const btnAgregarProductos = document.getElementById('btnAgregarProductos');
-        let originalXmlDoc = null; // Variable para almacenar el XML original parseado
+        // Añadir listeners cuando el DOM esté cargado
+        document.addEventListener('DOMContentLoaded', function () {
+            const dateTimeElement = document.getElementById('datetime');
+            const btnProcesar = document.getElementById('btnProcesar');
+            const inputRuta = document.getElementById('rutaXmlInput');
+            const fileUpload = document.getElementById('fileUpload');
+            const btnGuardarCambios = document.getElementById('btnGuardarCambios');
+            const btnAgregarProductos = document.getElementById('btnAgregarProductos');
+            let originalXmlDoc = null; // Variable para almacenar el XML original parseado
 
-        // --- FUNCIÓN PARA ACTUALIZAR FECHA Y HORA ---
-        function updateDateTime() {
-            const now = new Date();
-            // Formato amigable para español (DD/MM/YYYY, HH:MM:SS)
-            const formattedDateTime = now.toLocaleString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            if (dateTimeElement) {
-                dateTimeElement.textContent = formattedDateTime;
-            }
-        }
-
-        // Procesar al hacer clic en el botón
-        btnProcesar.addEventListener('click', () => {
-            if (fileUpload.files.length > 0) {
-                procesarFacturaXML(fileUpload.files[0]);
-            } else {
-                alert("Por favor, seleccione un archivo XML primero.");
-            }
-        });
-
-        // Manejar la selección de archivo
-        fileUpload.addEventListener('change', () => {
-            if (fileUpload.files.length > 0) {
-                const file = fileUpload.files[0];
-                inputRuta.value = file.name; // Mostrar el nombre del archivo en el input
-                procesarFacturaXML(file); // Procesar el archivo automáticamente
-            }
-        });
-
-        // --- AGREGAR PRODUCTOS A LA BASE DE DATOS ---
-        btnAgregarProductos.addEventListener('click', async () => {
-            const filas = document.querySelectorAll("#tablaextrae tbody tr");
-            if (filas.length === 0) {
-                alert("No hay productos en la tabla para agregar.");
-                return;
+            // --- FUNCIÓN PARA ACTUALIZAR FECHA Y HORA ---
+            function updateDateTime() {
+                const now = new Date();
+                // Formato amigable para español (DD/MM/YYYY, HH:MM:SS)
+                const formattedDateTime = now.toLocaleString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                if (dateTimeElement) {
+                    dateTimeElement.textContent = formattedDateTime;
+                }
             }
 
-            const productos = [];
-            filas.forEach(fila => {
-                // Asegurarse de que no es una fila de mensaje (como "cargando..." o "sin resultados")
-                if (fila.cells.length > 1) {
-                    // Función para parsear el número en formato PY (1.234.567) a un número estándar
-                    const parsePrecioPY = (precioStr) => {
-                        return parseFloat(precioStr.replace(/\./g, '').replace(',', '.'));
-                    };
-
-                    const producto = {
-                        codnumeric: fila.cells[0].textContent,
-                        nombre: fila.cells[1].textContent,
-                        precio1: parsePrecioPY(fila.cells[3].textContent),
-                        cantcaja: fila.cells[4].textContent
-                    };
-                    productos.push(producto);
+            // Procesar al hacer clic en el botón
+            btnProcesar.addEventListener('click', () => {
+                if (fileUpload.files.length > 0) {
+                    procesarFacturaXML(fileUpload.files[0]);
+                } else {
+                    alert("Por favor, seleccione un archivo XML primero.");
                 }
             });
 
-            if (productos.length === 0) {
-                alert("No se encontraron productos válidos para agregar.");
-                return;
-            }
+            // Manejar la selección de archivo
+            fileUpload.addEventListener('change', () => {
+                if (fileUpload.files.length > 0) {
+                    const file = fileUpload.files[0];
+                    inputRuta.value = file.name; // Mostrar el nombre del archivo en el input
+                    procesarFacturaXML(file); // Procesar el archivo automáticamente
+                }
+            });
 
-            try {
-                const response = await fetch('agregar_productos_xml.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ productos: productos })
+            // --- AGREGAR PRODUCTOS A LA BASE DE DATOS ---
+            btnAgregarProductos.addEventListener('click', async () => {
+                const filas = document.querySelectorAll("#tablaextrae tbody tr");
+                if (filas.length === 0) {
+                    alert("No hay productos en la tabla para agregar.");
+                    return;
+                }
+
+                const productos = [];
+                filas.forEach(fila => {
+                    // Asegurarse de que no es una fila de mensaje (como "cargando..." o "sin resultados")
+                    if (fila.cells.length > 1) {
+                        // Función para parsear el número en formato PY (1.234.567) a un número estándar
+                        const parsePrecioPY = (precioStr) => {
+                            return parseFloat(precioStr.replace(/\./g, '').replace(',', '.'));
+                        };
+
+                        const producto = {
+                            codnumeric: fila.cells[0].textContent,
+                            nombre: fila.cells[1].textContent,
+                            precio1: parsePrecioPY(fila.cells[3].textContent),
+                            cantcaja: fila.cells[4].textContent
+                        };
+                        productos.push(producto);
+                    }
                 });
 
-                const resultado = await response.json();
-                alert(resultado.message); // Mostrar el mensaje del servidor
-
-            } catch (error) {
-                console.error('Error al agregar productos:', error);
-                alert('Ocurrió un error al conectar con el servidor.');
-            }
-        });
-
-        // --- GUARDAR CAMBIOS ---
-        btnGuardarCambios.addEventListener('click', () => {
-            if (!originalXmlDoc) {
-                alert("No hay un archivo XML cargado para guardar.");
-                return;
-            }
-
-            const filasVisibles = document.querySelectorAll("#tablaextrae tbody tr");
-            const codigosInternosVisibles = new Set();
-            
-            // 1. Recolectar los códigos de las filas que aún existen y actualizar sus nombres
-            filasVisibles.forEach(fila => {
-                const codInter = fila.dataset.codInter;
-                if (codInter) {
-                    codigosInternosVisibles.add(codInter);
+                if (productos.length === 0) {
+                    alert("No se encontraron productos válidos para agregar.");
+                    return;
                 }
 
-                // Actualizar el nombre en el XML para este item
-                const itemsXml = Array.from(originalXmlDoc.getElementsByTagName('gCamItem'));
-                const itemXmlCorrespondiente = itemsXml.find(item => item.getElementsByTagName('dCodInt')[0]?.textContent === codInter);
-                if (itemXmlCorrespondiente) {
-                    const nuevoNombre = fila.cells[1].textContent;
-                    const nuevaCantCaja = fila.cells[4].textContent; // Celda de Cant. Caja
+                try {
+                    const response = await fetch('agregar_productos_xml.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ productos: productos })
+                    });
 
-                    const nombreXmlTag = itemXmlCorrespondiente.getElementsByTagName('dDesProSer')[0];
-                    if (nombreXmlTag) { 
-                        nombreXmlTag.textContent = nuevoNombre;
-                    }
-                    let cantCajaXmlTag = itemXmlCorrespondiente.getElementsByTagName('dCantCaja')[0];
-                    if (!cantCajaXmlTag) {
-                        // Si la etiqueta no existe, la creamos
-                        cantCajaXmlTag = originalXmlDoc.createElement('dCantCaja');
-                        itemXmlCorrespondiente.appendChild(cantCajaXmlTag);
-                    }
-                    cantCajaXmlTag.textContent = nuevaCantCaja;
+                    const resultado = await response.json();
+                    alert(resultado.message); // Mostrar el mensaje del servidor
+
+                } catch (error) {
+                    console.error('Error al agregar productos:', error);
+                    alert('Ocurrió un error al conectar con el servidor.');
                 }
             });
 
-            // 2. Eliminar del XML los nodos que ya no están en la tabla
-            Array.from(originalXmlDoc.getElementsByTagName('gCamItem')).forEach(itemXml => {
-                const codInterXml = itemXml.getElementsByTagName('dCodInt')[0]?.textContent;
-                if (!codigosInternosVisibles.has(codInterXml)) {
-                    itemXml.parentNode.removeChild(itemXml);
+            // --- GUARDAR CAMBIOS ---
+            btnGuardarCambios.addEventListener('click', () => {
+                if (!originalXmlDoc) {
+                    alert("No hay un archivo XML cargado para guardar.");
+                    return;
                 }
+
+                const filasVisibles = document.querySelectorAll("#tablaextrae tbody tr");
+                const codigosInternosVisibles = new Set();
+
+                // 1. Recolectar los códigos de las filas que aún existen y actualizar sus nombres
+                filasVisibles.forEach(fila => {
+                    const codInter = fila.dataset.codInter;
+                    if (codInter) {
+                        codigosInternosVisibles.add(codInter);
+                    }
+
+                    // Actualizar el nombre en el XML para este item
+                    const itemsXml = Array.from(originalXmlDoc.getElementsByTagName('gCamItem'));
+                    const itemXmlCorrespondiente = itemsXml.find(item => item.getElementsByTagName('dCodInt')[0]?.textContent === codInter);
+                    if (itemXmlCorrespondiente) {
+                        const nuevoNombre = fila.cells[1].textContent;
+                        const nuevaCantCaja = fila.cells[4].textContent; // Celda de Cant. Caja
+
+                        const nombreXmlTag = itemXmlCorrespondiente.getElementsByTagName('dDesProSer')[0];
+                        if (nombreXmlTag) {
+                            nombreXmlTag.textContent = nuevoNombre;
+                        }
+                        let cantCajaXmlTag = itemXmlCorrespondiente.getElementsByTagName('dCantCaja')[0];
+                        if (!cantCajaXmlTag) {
+                            // Si la etiqueta no existe, la creamos
+                            cantCajaXmlTag = originalXmlDoc.createElement('dCantCaja');
+                            itemXmlCorrespondiente.appendChild(cantCajaXmlTag);
+                        }
+                        cantCajaXmlTag.textContent = nuevaCantCaja;
+                    }
+                });
+
+                // 2. Eliminar del XML los nodos que ya no están en la tabla
+                Array.from(originalXmlDoc.getElementsByTagName('gCamItem')).forEach(itemXml => {
+                    const codInterXml = itemXml.getElementsByTagName('dCodInt')[0]?.textContent;
+                    if (!codigosInternosVisibles.has(codInterXml)) {
+                        itemXml.parentNode.removeChild(itemXml);
+                    }
+                });
+
+                // Convertir el documento XML modificado de nuevo a texto
+                const serializer = new XMLSerializer();
+                const xmlString = serializer.serializeToString(originalXmlDoc);
+
+                // Crear un Blob con el XML y simular una descarga
+                const blob = new Blob([xmlString], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+
+                a.href = url;
+
+                let downloadFileName = 'factura_modificada'; // Nombre base por defecto
+                if (fileUpload.files.length > 0) {
+                    const originalFileName = fileUpload.files[0].name;
+                    // Obtener la parte del nombre antes de la última extensión (si existe)
+                    const lastDotIndex = originalFileName.lastIndexOf('.');
+                    if (lastDotIndex !== -1) {
+                        downloadFileName = originalFileName.substring(0, lastDotIndex);
+                    } else {
+                        downloadFileName = originalFileName; // No hay extensión, usar el nombre completo
+                    }
+                }
+                a.download = downloadFileName + '.xml'; // Asegurar que siempre termine en .xml
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             });
 
-            // Convertir el documento XML modificado de nuevo a texto
-            const serializer = new XMLSerializer();
-            const xmlString = serializer.serializeToString(originalXmlDoc);
+            // Función para procesar el archivo XML y llenar la tabla
+            async function procesarFacturaXML(file) {
+                const tablaBody = document.querySelector("#tablaextrae tbody");
+                tablaBody.innerHTML = '<tr><td colspan="6" class="text-center">Cargando...</td></tr>';
 
-            // Crear un Blob con el XML y simular una descarga
-            const blob = new Blob([xmlString], { type: 'application/xml' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+                try {
+                    if (!file) throw new Error("No se ha seleccionado ningún archivo.");
 
-            a.href = url;
-            
-            let downloadFileName = 'factura_modificada'; // Nombre base por defecto
-            if (fileUpload.files.length > 0) {
-                const originalFileName = fileUpload.files[0].name;
-                // Obtener la parte del nombre antes de la última extensión (si existe)
-                const lastDotIndex = originalFileName.lastIndexOf('.');
-                if (lastDotIndex !== -1) {
-                    downloadFileName = originalFileName.substring(0, lastDotIndex);
-                } else {
-                    downloadFileName = originalFileName; // No hay extensión, usar el nombre completo
-                }
-            }
-            a.download = downloadFileName + '.xml'; // Asegurar que siempre termine en .xml
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
+                    // 1. Leer el archivo como texto
+                    const xmlText = await file.text();
 
-        // Función para procesar el archivo XML y llenar la tabla
-        async function procesarFacturaXML(file) {
-            const tablaBody = document.querySelector("#tablaextrae tbody");
-            tablaBody.innerHTML = '<tr><td colspan="6" class="text-center">Cargando...</td></tr>';
+                    // 2. Parsear el texto XML
+                    const parser = new DOMParser();
+                    originalXmlDoc = parser.parseFromString(xmlText, "application/xml"); // Guardar en la variable global
 
-            try {
-                if (!file) throw new Error("No se ha seleccionado ningún archivo.");
+                    // Manejo de errores de parseo
+                    const errorNode = originalXmlDoc.querySelector("parsererror");
+                    if (errorNode) {
+                        throw new Error("Error al parsear el XML: " + errorNode.innerText);
+                    }
 
-                // 1. Leer el archivo como texto
-                const xmlText = await file.text();
+                    // Limpiar el mensaje de "Cargando..."
+                    tablaBody.innerHTML = '';
 
-                // 2. Parsear el texto XML
-                const parser = new DOMParser();
-                originalXmlDoc = parser.parseFromString(xmlText, "application/xml"); // Guardar en la variable global
+                    // 3. Recorrer cada ítem de la factura
+                    const items = Array.from(originalXmlDoc.getElementsByTagName('gCamItem'));
 
-                // Manejo de errores de parseo
-                const errorNode = originalXmlDoc.querySelector("parsererror");
-                if (errorNode) {
-                    throw new Error("Error al parsear el XML: " + errorNode.innerText);
-                }
+                    for (const item of items) {
+                        const cod_inter = item.getElementsByTagName('dCodInt')[0]?.textContent || 'N/A';
+                        const nombre = item.getElementsByTagName('dDesProSer')[0]?.textContent || 'N/A';
+                        const cantidad = item.getElementsByTagName('dCantProSer')[0]?.textContent || '0';
+                        const precio = item.getElementsByTagName('dPUniProSer')[0]?.textContent || '0';
+                        const cantcaja = item.getElementsByTagName('dCantCaja')[0]?.textContent || '0'; // Leemos cantcaja, default a '0'
 
-                // Limpiar el mensaje de "Cargando..."
-                tablaBody.innerHTML = '';
+                        const nuevaFila = tablaBody.insertRow();
+                        nuevaFila.dataset.codInter = cod_inter; // Guardar el código como identificador
+                        nuevaFila.insertCell(0).textContent = cod_inter;
 
-                // 3. Recorrer cada ítem de la factura
-                const items = Array.from(originalXmlDoc.getElementsByTagName('gCamItem'));
+                        const cellNombre = nuevaFila.insertCell(1);
+                        cellNombre.textContent = nombre;
+                        cellNombre.setAttribute('contenteditable', 'true'); // Hacer la celda editable
 
-                for (const item of items) {
-                    const cod_inter = item.getElementsByTagName('dCodInt')[0]?.textContent || 'N/A';
-                    const nombre = item.getElementsByTagName('dDesProSer')[0]?.textContent || 'N/A';
-                    const cantidad = item.getElementsByTagName('dCantProSer')[0]?.textContent || '0';
-                    const precio = item.getElementsByTagName('dPUniProSer')[0]?.textContent || '0';
-                    const cantcaja = item.getElementsByTagName('dCantCaja')[0]?.textContent || '0'; // Leemos cantcaja, default a '0'
-                    
-                    const nuevaFila = tablaBody.insertRow();
-                    nuevaFila.dataset.codInter = cod_inter; // Guardar el código como identificador
-                    nuevaFila.insertCell(0).textContent = cod_inter;
-                    
-                    const cellNombre = nuevaFila.insertCell(1);
-                    cellNombre.textContent = nombre;
-                    cellNombre.setAttribute('contenteditable', 'true'); // Hacer la celda editable
+                        nuevaFila.insertCell(2).textContent = cantidad;
+                        nuevaFila.insertCell(3).textContent = parseFloat(precio).toLocaleString('es-PY');
 
-                    nuevaFila.insertCell(2).textContent = cantidad;
-                    nuevaFila.insertCell(3).textContent = parseFloat(precio).toLocaleString('es-PY');
-                    
-                    const cellCantCaja = nuevaFila.insertCell(4);
-                    cellCantCaja.textContent = cantcaja;
-                    cellCantCaja.setAttribute('contenteditable', 'true'); // Hacer la celda editable
+                        const cellCantCaja = nuevaFila.insertCell(4);
+                        cellCantCaja.textContent = cantcaja;
+                        cellCantCaja.setAttribute('contenteditable', 'true'); // Hacer la celda editable
 
-                    // Crear y añadir la celda con el botón de eliminar
-                    const cellAcciones = nuevaFila.insertCell(5);
-                    const btnEliminar = document.createElement('button');
-                    btnEliminar.textContent = 'Eliminar';
-                    btnEliminar.className = 'btn btn-danger btn-sm';
-                    btnEliminar.onclick = function() {
-                        // this.closest('tr') encuentra la fila (<tr>) padre del botón y la elimina
-                        this.closest('tr').remove();
-                    };
-                    cellAcciones.appendChild(btnEliminar);
-                }
+                        // Crear y añadir la celda con el botón de eliminar
+                        const cellAcciones = nuevaFila.insertCell(5);
+                        const btnEliminar = document.createElement('button');
+                        btnEliminar.textContent = 'Eliminar';
+                        btnEliminar.className = 'btn btn-danger btn-sm';
+                        btnEliminar.onclick = function () {
+                            // this.closest('tr') encuentra la fila (<tr>) padre del botón y la elimina
+                            this.closest('tr').remove();
+                        };
+                        cellAcciones.appendChild(btnEliminar);
+                    }
 
-                if (items.length === 0) {
-                    tablaBody.innerHTML = `<tr><td colspan="6" class="text-center text-warning">No se encontraron ítems en el archivo '${file.name}'.</td></tr>`;
+                    if (items.length === 0) {
+                        tablaBody.innerHTML = `<tr><td colspan="6" class="text-center text-warning">No se encontraron ítems en el archivo '${file.name}'.</td></tr>`;
+                        btnAgregarProductos.style.display = 'none';
+                        btnGuardarCambios.style.display = 'none'; // Ocultar botón si no hay items
+                    } else {
+                        btnAgregarProductos.style.display = 'inline-block';
+                        btnGuardarCambios.style.display = 'inline-block'; // Mostrar botón si hay items
+                    }
+
+                } catch (error) {
                     btnAgregarProductos.style.display = 'none';
-                    btnGuardarCambios.style.display = 'none'; // Ocultar botón si no hay items
-                } else {
-                    btnAgregarProductos.style.display = 'inline-block';
-                    btnGuardarCambios.style.display = 'inline-block'; // Mostrar botón si hay items
+                    console.error("Ocurrió un error:", error);
+                    btnGuardarCambios.style.display = 'none'; // Ocultar botón en caso de error
+                    tablaBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error al procesar el archivo: ${error.message}</td></tr>`;
                 }
-
-            } catch (error) {
-                btnAgregarProductos.style.display = 'none';
-                console.error("Ocurrió un error:", error);
-                btnGuardarCambios.style.display = 'none'; // Ocultar botón en caso de error
-                tablaBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error al procesar el archivo: ${error.message}</td></tr>`;
             }
-        }
 
-        // Iniciar la actualización de la fecha y hora
-        updateDateTime(); // Llamada inicial para que no espere 1 segundo
-        setInterval(updateDateTime, 1000); // Actualizar cada segundo
-    });
+            // Iniciar la actualización de la fecha y hora
+            updateDateTime(); // Llamada inicial para que no espere 1 segundo
+            setInterval(updateDateTime, 1000); // Actualizar cada segundo
+        });
     </script>
 
 </body>
+
 </html>

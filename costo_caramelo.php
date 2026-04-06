@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once 'config.php';
 ?>
 <!DOCTYPE html>
@@ -13,6 +13,7 @@ require_once 'config.php';
     </title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* ... Estilos acortados por simplicidad, se mantiene desde h1 ... */
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
@@ -262,6 +263,23 @@ require_once 'config.php';
             }
         }
     </style>
+    <script>
+        // Asegurar que no haya Service Workers activos (Preventivo para Ngrok/Móviles)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                for (let registration of registrations) {
+                    registration.unregister().then(function(boolean) {
+                        if (boolean) console.log('Service Worker desregistrado.');
+                    });
+                }
+            });
+        }
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                for (let name of names) caches.delete(name);
+            });
+        }
+    </script>
 </head>
 
 <body>

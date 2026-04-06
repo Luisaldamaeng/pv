@@ -17,9 +17,10 @@ if (isset($_GET['delete_id'])) {
     exit;
 }
 
-// Lógica para agregar (POST)
+// Lógica para agregar o editar (POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
+    $id = isset($input['id']) ? (int) $input['id'] : null;
     $concepto = trim($input['concepto'] ?? '');
     $valor = trim($input['valor'] ?? '');
 
@@ -28,12 +29,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $stmt = $conn->prepare("INSERT INTO chatbot_memoria (concepto, valor) VALUES (?, ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)");
-    $stmt->bind_param("ss", $concepto, $valor);
-    if ($stmt->execute()) {
-        echo json_encode(['status' => 'success', 'message' => 'Memoria guardada']);
+    if ($id) {
+        // Editar existente
+        $stmt = $conn->prepare("UPDATE chatbot_memoria SET concepto = ?, valor = ? WHERE id = ?");
+        $stmt->bind_param("ssi", $concepto, $valor, $id);
     } else {
-        echo json_encode(['status' => 'error', 'message' => 'Error al guardar']);
+        // Insertar nuevo
+        $stmt = $conn->prepare("INSERT INTO chatbot_memoria (concepto, valor) VALUES (?, ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)");
+        $stmt->bind_param("ss", $concepto, $valor);
+    }
+
+    if ($stmt->execute()) {
+        echo json_encode(['status' => 'success', 'message' => $id ? 'Memoria actualizada' : 'Memoria guardada']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Error al procesar la solicitud']);
     }
     $stmt->close();
     exit;

@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('chat-file');
     const imageBtn = document.getElementById('chat-image');
     let selectedImageBase64 = null;
+    let selectedImageMime = null;
     let chatHistory = []; // Variable para guardar el historial de la sesión
 
     // Generar un ID de sesión único para esta pestaña si no existe
@@ -37,7 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const reader = new FileReader();
             reader.onload = function (e) {
                 selectedImageBase64 = e.target.result.split(',')[1];
-                addMessage("Imagen seleccionada lista para enviar.", 'user');
+                selectedImageMime = file.type;
+                addMessage("Imagen seleccionada lista para enviar (" + file.name + ").", 'user');
             };
             reader.readAsDataURL(file);
         }
@@ -58,12 +60,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const payload = {
             message: text,
             image: selectedImageBase64,
+            mime_type: selectedImageMime,
             history: chatHistory, // Enviamos el historial de la sesión
             session_id: sessionId // Enviamos el ID de sesión para logs
         };
 
         input.value = '';
         selectedImageBase64 = null;
+        selectedImageMime = null;
         fileInput.value = '';
 
         // Mantener el historial corto para no saturar la API (últimos 10 mensajes)

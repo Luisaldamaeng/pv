@@ -107,9 +107,10 @@ foreach ($history as $msg) {
 // Añadimos el mensaje actual
 $currentParts = [["text" => $systemPrompt . "\n\nUsuario dice: " . $userMessage]];
 if ($input['image'] ?? null) {
+    $mimeType = $input['mime_type'] ?? 'image/jpeg';
     $currentParts[] = [
         "inline_data" => [
-            "mime_type" => "image/jpeg",
+            "mime_type" => $mimeType,
             "data" => $input['image']
         ]
     ];
@@ -135,6 +136,7 @@ $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
 if ($httpCode !== 200) {
+    file_put_contents('debug_log.txt', "HTTP CODE: $httpCode\nRESPONSE: $response\n", FILE_APPEND);
     echo json_encode(['error' => 'Error de conexión', 'details' => $response]);
     exit;
 }

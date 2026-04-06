@@ -1,127 +1,221 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 
 <head>
+  <meta charset="UTF-8">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#32CD32">
-  <title>Botones</title>
+  <title>Panel de Control - Almacen</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('Service Worker registrado', reg))
-          .catch(err => console.log('Error al registrar Service Worker', err));
-      });
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #34495e;
+      --accent-color: #2ecc71;
+      --danger-color: #e74c3c;
+      --text-color: #ffffff;
+      --bg-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    }
+
     body {
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Nota_de_100_reais_%28dinheiro_do_Brasil%29.jpg/600px-Nota_de_100_reais_%28dinheiro_do_Brasil%29.jpg'), url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/ARG-1000_Pesos-2017-obverse.jpg/640px-ARG-1000_Pesos-2017-obverse.jpg'), url('https://upload.wikimedia.org/wikipedia/commons/f/f7/50000_Guaran%C3%ADes.jpg');
-      background-position: top left, top center, top right;
-      background-repeat: no-repeat;
-      background-size: 33.33% auto;
-      background-color: lightblue;
-      /* Fondo celeste */
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      min-height: 100vh;
       margin: 0;
-    }
-
-    .main-title {
-      text-align: center;
-      color: red;
-      padding-top: 20px;
-      text-shadow: 2px 2px 4px #000000;
-    }
-
-    .button-container {
-      display: flex;
-      justify-content: space-around;
-      /* Distribuye las columnas */
-      align-items: flex-start;
-      /* Alinea las columnas arriba */
-      height: 100vh;
-      padding: 20px;
-    }
-
-    .column {
       display: flex;
       flex-direction: column;
-      /* Apila los botones verticalmente */
       align-items: center;
+      color: var(--text-color);
     }
 
-    button {
-      margin: 5px;
-      /* Botones más juntos */
-      padding: 15px 25px;
-      font-size: 20px;
-      font-weight: bold;
+    .header {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      color: #ffffff;
+    }
+
+    .version-badge {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.85rem;
       cursor: pointer;
-      background-color: limegreen;
-      /* Color verde limón */
-      color: red;
-      border: none;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .version-badge:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    .grid-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      max-width: 1000px;
+      padding: 20px;
+      width: 100%;
+    }
+
+    .menu-button {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
       border-radius: 8px;
-      box-shadow: 0 4px #228B22;
-      /* Sombra verde oscuro */
+      cursor: pointer;
       transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      white-space: nowrap;
+      /* Evita que el texto se rompa */
     }
 
-    button:hover {
-      background-color: #228B22;
-      /* Verde oscuro al pasar el ratón */
+    .menu-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
-    /* Estilos para dispositivos móviles (Responsive) */
+    /* Colores específicos para destacar áreas */
+    .btn-green {
+      border-bottom: 3px solid #2ecc71;
+    }
+
+    .btn-blue {
+      border-bottom: 3px solid #3498db;
+    }
+
+    .btn-orange {
+      border-bottom: 3px solid #f39c12;
+    }
+
+    .btn-red {
+      border-bottom: 3px solid #e74c3c;
+    }
+
+    .chatbot-section {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
     @media (max-width: 768px) {
-      body {
-        background-image: none;
-        /* Quita las imágenes para mejorar legibilidad en móvil */
+      .grid-container {
+        gap: 8px;
       }
 
-      .button-container {
-        flex-direction: column;
-        /* Apila las columnas verticalmente */
-        align-items: center;
-        height: auto;
-        /* Permite que la altura crezca según el contenido */
+      .header h1 {
+        font-size: 1.8rem;
       }
 
-      .column {
-        width: 100%;
-        margin-bottom: 15px;
-      }
-
-      button {
-        width: 90%;
-        /* Botones más anchos para facilitar el toque */
-        max-width: 350px;
+      .menu-button {
+        font-size: 0.9rem;
+        padding: 10px 15px;
       }
     }
   </style>
+  <script>
+    // Asegurar que no haya Service Workers activos (Eliminar PWA)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) {
+          registration.unregister().then(function(boolean) {
+             if (boolean) console.log('Service Worker desregistrado.');
+          });
+        }
+      });
+    }
+    // Limpiar cachés manualmente también
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        for (let name of names) caches.delete(name);
+      });
+    }
+
+    function limpiarCache() {
+      if (confirm('¿Desea limpiar la caché de la aplicación y recargar?')) {
+        localStorage.clear();
+        sessionStorage.clear();
+        if ('caches' in window) {
+          caches.keys().then((names) => {
+            for (let name of names) caches.delete(name);
+          });
+        }
+        alert('Caché limpiada. Recargando...');
+        window.location.reload(true);
+      }
+    }
+  </script>
 </head>
 
 <body>
-  <h1 class="main-title">Menu Principal</h1>
-  <div class="button-container">
-    <div class="column">
-      <button onclick="window.open('/PV/buscar_prod.html', '_blank')">buscar_prod</button>
-      <button onclick="window.open('/PV/lectorQR.html', '_blank')">lector de codigo QR</button>
-      <button onclick="window.open('/PV/visor_xml.html', '_blank')">visor_xml</button>
-    </div>
-    <div class="column">
-      <button onclick="window.open('/PV/productos.php', '_blank')">producto</button>
-      <button onclick="window.open('/libreta/carga_datos.php', '_blank')">carga_datos</button>
-      <button onclick="window.open('/PV/costo_mercaderia.html', '_blank')">costo_mercaderia</button>
-    </div>
-    <div class="column">
-      <button onclick="window.open('/libreta/crud_clientes.php', '_blank')">crud_clientes</button>
-      <button onclick="window.open('/libreta/editar_libreta.php', '_blank')">editar_libreta</button>
-      <button onclick="window.open('/PV/costo_caramelo.php', '_blank')">costo_caramelo</button>
-    </div>
+  <div class="version-badge" onclick="limpiarCache()" title="Click para limpiar caché">
+    v
+    <?php require 'config.php'; echo APP_VERSION; ?> | 🧹 Limpiar Caché
   </div>
 
+  <header class="header">
+    <h1>Sistema de Control Almacén</h1>
+  </header>
+
+  <div class="grid-container">
+    <!-- Grupo de Operaciones -->
+    <div class="menu-button btn-green" onclick="window.open('/PV/buscar_prod.html', 'ventana_buscar_prod')">🔍 Buscar Prod</div>
+    <div class="menu-button btn-green" onclick="window.open('/PV/lectorQR.html', 'ventana_lector_qr')">📱 Lector QR</div>
+    <div class="menu-button btn-green" onclick="window.open('/PV/visor_xml.html', 'ventana_visor_xml')">📑 Visor XML</div>
+    <div class="menu-button btn-green" onclick="window.open('/PV/desglose_porcentaje.php', 'ventana_desglose')">🧮 Desglose Pct / IVA</div>
+
+    <!-- Grupo de Productos -->
+    <div class="menu-button btn-blue" onclick="window.open('/PV/productos.php', 'ventana_productos')">📦 Productos</div>
+    <div class="menu-button btn-blue" onclick="window.open('/libreta/carga_datos.php', 'ventana_carga_datos')">📥 Carga Datos</div>
+    <div class="menu-button btn-blue" onclick="window.open('/PV/costo_mercaderia.php', 'ventana_costo_mercaderia')">💰 Costo Mercadería
+    </div>
+
+    <!-- Grupo de Gestión -->
+    <div class="menu-button btn-orange" onclick="window.open('/libreta/crud_clientes.php', 'ventana_crud_clientes')">👥 Clientes</div>
+    <div class="menu-button btn-orange" onclick="window.open('/libreta/editar_libreta.php', 'ventana_editar_libreta')">📋 Editar Libreta
+    </div>
+    <div class="menu-button btn-orange" onclick="window.open('/PV/costo_caramelo.php', 'ventana_costo_caramelo')">🍬 Costo Caramelo
+    </div>
+
+    <!-- Sección Chatbot -->
+    <div class="chatbot-section">
+      <div class="menu-button" style="background: rgba(52, 152, 219, 0.2); border-bottom: 3px solid #3498db;"
+        onclick="window.open('/PV/gestion_memoria.php', 'ventana_gestion_memoria')">🧠 Gestión de Memoria</div>
+      <div class="menu-button" style="background: rgba(44, 62, 80, 0.4); border-bottom: 3px solid #95a5a6;"
+        onclick="window.open('/PV/ver_conversaciones.php', 'ventana_historial')">💬 Historial de Chats</div>
+    </div>
+  </div>
 </body>
 
 </html>

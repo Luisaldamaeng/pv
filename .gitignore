@@ -4,4 +4,5 @@ test_gemini.py
 imagen/
 config.php
 debug_log.txt
-*.log
+*.logvfp9.iso
+cloudflared.exe

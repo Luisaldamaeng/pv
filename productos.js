@@ -565,6 +565,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
         }
+
+        if (e.key === 'Enter' && !isEditing) {
+            const pointerCell = document.querySelector('.puntero-celda:not(:empty)');
+            const selectedRowKey = pointerCell ? pointerCell.closest('tr') : null;
+            if (selectedRowKey && !selectedRowKey.querySelector('td[colspan]')) {
+                e.preventDefault();
+                if (editaModal) {
+                    const form = document.getElementById('form-edita');
+                    form.querySelector('#edita-id').value = selectedRowKey.dataset.id;
+                    form.querySelector('#edita-nombre').value = selectedRowKey.dataset.nombre;
+                    form.querySelector('#edita-precio1').value = selectedRowKey.dataset.precio1;
+                    form.querySelector('#edita-codbar').value = selectedRowKey.dataset.codbar;
+                    form.querySelector('#edita-costo').value = selectedRowKey.dataset.costo;
+                    form.querySelector('#edita-anotacion').value = selectedRowKey.dataset.anotacion;
+                    form.querySelector('#edita-CODNUMERI').value = selectedRowKey.dataset.codnumeri;
+                    form.querySelector('#edita-selecc').checked = selectedRowKey.dataset.selecc == '1';
+                    
+                    editaModal.show();
+                }
+            }
+        }
     });
 
     contentTbody.addEventListener('keydown', function (e) {
@@ -589,8 +610,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Modal de Nuevo Producto
     if (nuevoModalEl) {
-        nuevoModalEl.addEventListener('hidden.bs.modal', () => formNuevo.reset());
+        nuevoModalEl.addEventListener('hidden.bs.modal', () => {
+            formNuevo.reset();
+            const checkMargen = document.getElementById('check-calcular-margen');
+            if (checkMargen) checkMargen.checked = false;
+        });
         nuevoModalEl.addEventListener('shown.bs.modal', () => document.getElementById('nuevo-nombre').focus());
+        
+        // --- LÓGICA DE AUTO-CALCULAR MARGEN ---
+        const checkCalcularMargen = document.getElementById('check-calcular-margen');
+        if (checkCalcularMargen) {
+            checkCalcularMargen.addEventListener('change', function() {
+                if (this.checked) {
+                    const precio1Input = document.getElementById('nuevo-precio1');
+                    const costoInput = document.getElementById('nuevo-costo');
+                    let auxprecost = parseFloat(precio1Input.value);
+
+                    if (!isNaN(auxprecost) && auxprecost > 0) {
+                        // 1. Guardar el valor original en 'Costo'
+                        costoInput.value = auxprecost;
+                        
+                        // 2. Leer el porcentaje dinámico, aplicar y reescribir 'Precio1'
+                        const margenInput = document.getElementById('nuevo-porcentaje-margen');
+                        let porcentaje = parseFloat(margenInput.value) || 0;
+                        let factor = 1 + (porcentaje / 100);
+                        let nuevoPrecio = auxprecost * factor;
+                        
+                        precio1Input.value = nuevoPrecio; // Usamos la misma precisión numérica
+                        
+                        // Permite al usuario editar libremente el campo después del cálculo
+                        this.checked = false;
+                    } else {
+                        mostrarAlerta("Por favor, introduzca un valor válido en Precio 1 antes de calcular el margen.");
+                        this.checked = false;
+                    }
+                }
+            });
+        }
     }
 
     formNuevo.addEventListener('submit', function (e) {
@@ -640,6 +696,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Modal de Edición
     if (editaModalEl) {
+        editaModalEl.addEventListener('hidden.bs.modal', () => {
+            const checkMargenEdita = document.getElementById('check-calcular-margen-edita');
+            if (checkMargenEdita) checkMargenEdita.checked = false;
+        });
+
+        // --- LÓGICA DE AUTO-CALCULAR MARGEN EDITA ---
+        const checkCalcularMargenEdita = document.getElementById('check-calcular-margen-edita');
+        if (checkCalcularMargenEdita) {
+            checkCalcularMargenEdita.addEventListener('change', function() {
+                if (this.checked) {
+                    const precio1Input = document.getElementById('edita-precio1');
+                    const costoInput = document.getElementById('edita-costo');
+                    let auxprecost = parseFloat(precio1Input.value);
+
+                    if (!isNaN(auxprecost) && auxprecost > 0) {
+                        // 1. Guardar el valor original en 'Costo'
+                        costoInput.value = auxprecost;
+                        
+                        // 2. Leer el porcentaje dinámico, aplicar y reescribir 'Precio1'
+                        const margenInput = document.getElementById('edita-porcentaje-margen');
+                        let porcentaje = parseFloat(margenInput.value) || 0;
+                        let factor = 1 + (porcentaje / 100);
+                        let nuevoPrecio = auxprecost * factor;
+                        
+                        precio1Input.value = nuevoPrecio; // Usamos la misma precisión numérica
+                        
+                        // Permite al usuario editar libremente el campo después del cálculo
+                        this.checked = false;
+                    } else {
+                        mostrarAlerta("Por favor, introduzca un valor válido en Precio 1 antes de calcular el margen.");
+                        this.checked = false;
+                    }
+                }
+            });
+        }
+
         formEdita.addEventListener('submit', function (e) {
             e.preventDefault();
             let formData = new FormData(this);

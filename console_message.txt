@@ -1,5 +1,0 @@
-Por favor, asegúrate de que estás usando la versión más reciente de los archivos que he modificado. El error `productos.js:761 Uncaught TypeError: Cannot read properties of undefined (reading 'getUserMedia')` que me proporcionaste indica que se está ejecutando una versión antigua de `productos.js`.
-
-Ya eliminé el bloque de código que causaba ese error en un paso anterior.
-
-Una vez que te asegures de que los archivos estén actualizados, por favor, vuelve a probar la funcionalidad y comparte el nuevo resultado de la consola.

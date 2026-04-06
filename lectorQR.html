@@ -1,21 +1,55 @@
 <!-- Guarda este archivo como index.html en: C:\xampp\htdocs\PV\lector de codigo QR -->
 <!doctype html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Lector QR - JavaScript</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 1rem; background:#f7f7f7; }
-        #video { width:100%; max-width:600px; border:1px solid #ccc; background:#000; }
-        #controls { margin-top:.5rem; }
-        #output { margin-top:1rem; padding:.5rem; background:#fff; border:1px solid #ddd; max-width:600px; word-break:break-all; transition: background-color 0.3s; }
-        #output.success { background-color: #d4edda; }
-        #canvas { display:none; }
-        button,input[type=file] { margin-right:.5rem; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 1rem;
+            background: #f7f7f7;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #ccc;
+            background: #000;
+        }
+
+        #controls {
+            margin-top: .5rem;
+        }
+
+        #output {
+            margin-top: 1rem;
+            padding: .5rem;
+            background: #fff;
+            border: 1px solid #ddd;
+            max-width: 600px;
+            word-break: break-all;
+            transition: background-color 0.3s;
+        }
+
+        #output.success {
+            background-color: #d4edda;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        button,
+        input[type=file] {
+            margin-right: .5rem;
+        }
     </style>
 </head>
+
 <body>
     <h2>Lector de código QR</h2>
 
@@ -106,7 +140,7 @@
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 if (code && resultEl.textContent !== code.data) { // Evita lecturas repetidas del mismo código
                     resultEl.textContent = code.data;
-                    
+
                     // Feedback visual y auditivo
                     playBeep();
                     document.getElementById('output').classList.add('success');
@@ -180,4 +214,5 @@
 
     </script>
 </body>
+
 </html>

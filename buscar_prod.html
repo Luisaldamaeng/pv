@@ -6,15 +6,7 @@
     <meta charset="utf-8" />
     <title>Buscar producto</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#32CD32">
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
-        }
-    </script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -76,6 +68,15 @@
     </div>
 
     <script>
+        // Asegurar que no haya Service Workers activos (Eliminar PWA)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                for (let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+
         const qInput = document.getElementById('q');
         const result = document.getElementById('result');
         let searchTimeout;

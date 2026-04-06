@@ -1,40 +1,18 @@
-const CACHE_NAME = 'pv-v1';
-const ASSETS = [
-    'menu.html',
-    'buscar_prod.html',
-    'productos.php',
-    'icon-192.png',
-    'icon-512.png',
-    'favicon.ico'
-];
-
-// Instalar el service worker y almacenar en caché los activos
-self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(ASSETS))
-    );
+self.addEventListener('install', function(e) {
+  self.skipWaiting();
 });
 
-// Activar el service worker y limpiar cachés antiguas
-self.addEventListener('activate', event => {
-    event.waitUntil(
-        caches.keys().then(keys => {
-            return Promise.all(keys
-                .filter(key => key !== CACHE_NAME)
-                .map(key => caches.delete(key))
-            );
-        })
-    );
+self.addEventListener('activate', function(e) {
+  self.registration.unregister()
+    .then(function() {
+      return self.clients.matchAll();
+    })
+    .then(function(clients) {
+      clients.forEach(client => client.navigate(client.url));
+    });
 });
 
-// Estrategia de red con caída a caché para recursos dinámicos, 
-// o caché con caída a red para estaticos.
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                return response || fetch(event.request);
-            })
-    );
+// Limpiar todas las cachés
+caches.keys().then(function(names) {
+    for (let name of names) caches.delete(name);
 });
